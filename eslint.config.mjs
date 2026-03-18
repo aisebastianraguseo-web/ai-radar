@@ -10,7 +10,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname })
 const eslintConfig = [
   // CRITICAL: ESLint v9 flat config — ignores must be first element.
   // Never add .eslintignore — it is silently ignored in v9 flat config.
-  { ignores: ['.next/**', 'node_modules/**'] },
+  { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'] },
   ...compat.extends(
     'next/core-web-vitals',
     'next/typescript',

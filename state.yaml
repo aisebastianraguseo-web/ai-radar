@@ -1,13 +1,13 @@
 id: ai-radar
 type: web-saas
-phase: 2
-status: spec_approved
+phase: 3
+status: scaffold_done
 created_at: 2026-03-18T00:00:00Z
-updated_at: 2026-03-18T00:00:00Z
+updated_at: 2026-03-18T12:00:00Z
 phases:
   1_spec: done
   2_spec_review: done
-  3_scaffold: pending
+  3_scaffold: done
   4_features: pending
   5_gate: pending
   6_fix: pending

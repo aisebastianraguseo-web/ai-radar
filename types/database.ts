@@ -71,6 +71,16 @@ export interface UserPreferences {
   slack_webhook_url?: string
 }
 
+// ─── Relationship helper ──────────────────────────────────────────────────────
+
+type Rel = {
+  foreignKeyName: string
+  columns: string[]
+  isOneToOne?: boolean
+  referencedRelation: string
+  referencedColumns: string[]
+}
+
 // ─── Database Schema ─────────────────────────────────────────────────────────
 
 export interface Database {
@@ -100,6 +110,7 @@ export interface Database {
           preferences?: UserPreferences
           updated_at?: string
         }
+        Relationships: Rel[]
       }
       ingested_sources: {
         Row: {
@@ -123,6 +134,7 @@ export interface Database {
           id?: string
           source_type: SourceType
           source_url: string
+          url_hash: string
           title: string
           content?: string | null
           publish_date?: string | null
@@ -147,6 +159,7 @@ export interface Database {
           error_message?: string | null
           run_id?: string | null
         }
+        Relationships: Rel[]
       }
       ingestion_runs: {
         Row: {
@@ -179,6 +192,7 @@ export interface Database {
           sources_failed?: number
           status?: string
         }
+        Relationships: Rel[]
       }
       capability_deltas: {
         Row: {
@@ -214,12 +228,14 @@ export interface Database {
           evidence_snippets?: string[]
           mapping_status?: string
           score_id?: string | null
+          low_confidence?: boolean
           created_at?: string
         }
         Update: {
           mapping_status?: string
           score_id?: string | null
         }
+        Relationships: Rel[]
       }
       business_problem_mappings: {
         Row: {
@@ -244,7 +260,10 @@ export interface Database {
           mapped_date?: string
           mapper_version: string
         }
-        Update: never
+        Update: {
+          mapper_version?: string
+        }
+        Relationships: Rel[]
       }
       disruption_scores: {
         Row: {
@@ -274,9 +293,13 @@ export interface Database {
           hype_adjustment: number
           multi_signal_bonus: number
           total_disruption_score: number
+          alert_triggered?: boolean
           calculated_date?: string
         }
-        Update: never
+        Update: {
+          alert_triggered?: boolean
+        }
+        Relationships: Rel[]
       }
       capability_landscape_versions: {
         Row: {
@@ -297,7 +320,10 @@ export interface Database {
           notes?: string | null
           created_at?: string
         }
-        Update: never
+        Update: {
+          notes?: string | null
+        }
+        Relationships: Rel[]
       }
       weekly_briefings: {
         Row: {
@@ -337,6 +363,7 @@ export interface Database {
           full_content_md?: string
           status?: BriefingStatus
         }
+        Relationships: Rel[]
       }
       alert_logs: {
         Row: {
@@ -370,10 +397,13 @@ export interface Database {
           read_at?: string | null
           error_message?: string | null
         }
+        Relationships: Rel[]
       }
     }
-    Views: Record<string, never>
-    Functions: Record<string, never>
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    Views: {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    Functions: {}
     Enums: {
       user_role: UserRole
       source_type: SourceType

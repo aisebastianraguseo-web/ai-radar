@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -27,33 +28,33 @@ export default async function DashboardLayout({
             <span>AI Radar</span>
           </a>
           <nav aria-label="Hauptnavigation" className="hidden gap-4 sm:flex">
-            <a href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
               Übersicht
-            </a>
-            <a
+            </Link>
+            <Link
               href="/dashboard/capabilities"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Capabilities
-            </a>
-            <a
+            </Link>
+            <Link
               href="/dashboard/heatmap"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Heatmap
-            </a>
-            <a
+            </Link>
+            <Link
               href="/dashboard/alerts"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Alerts
-            </a>
-            <a
+            </Link>
+            <Link
               href="/dashboard/briefings"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Briefings
-            </a>
+            </Link>
           </nav>
           <form action="/api/auth/signout" method="post">
             <button
