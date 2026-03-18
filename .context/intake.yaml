@@ -1,0 +1,763 @@
+# =============================================================================
+# AI-Radar / KI-Enablement-Plattform — Product Specification
+# =============================================================================
+# Comprehensive product specification extracted from executive brief
+# AI-powered intelligence system for monitoring capability shifts in AI ecosystem
+# =============================================================================
+
+# [REQUIRED] Unique identifier
+id: ai-capability-radar
+
+# [REQUIRED] Product output type
+type: web-saas
+
+# [REQUIRED] One-line product description
+description: "SaaS platform that automatically tracks AI capability shifts across major vendors and weak signals, maps business impact, and delivers weekly actionable insights to enterprises on new problem-solving opportunities."
+
+# [REQUIRED] The single, specific problem this product solves
+problem_statement: |
+    Enterprises struggle to distinguish AI hype from genuine capability advances that could transform operations.
+
+    Current pain points:
+    - Information overload: dozens of daily AI announcements without strategic context
+    - Fragmented data sources: official channels (OpenAI, Google, Anthropic) + research + startups = no unified view
+    - Lost business mapping: new capabilities go unconnected to solvable business problems
+    - Reactive decision-making: leaders react after-the-fact instead of proactively identifying opportunities
+    - Repetitive manual analysis: every team conducts its own shallow research on AI trends
+
+    They need a solution that:
+    - Continuously ingests official AI releases + weak signals (GitHub, ArXiv, community)
+    - Extracts genuine capability deltas (e.g., "token limits +10x", "new agentic autonomy")
+    - Maps each delta to resolvable business problem classes (fragmentation, repetitivity, decision uncertainty, etc.)
+    - Generates weekly briefings with actionable statements: "Problem X now solvable via Capability Y (Δ factor Z)"
+    - Surfaces only high-signal disruption events (scores threshold-filtered)
+
+# [REQUIRED] Who are the primary users?
+target_users:
+    - "Enterprise AI/Strategy Lead (CTO/VP Innovation): responsible for identifying new AI opportunities to competitive advantage"
+    - "Product Manager (AI/Automation): seeking evidence of capability advances to justify new feature roadmaps"
+    - "Business Process Automation Manager: needs to know when new problem classes become addressable via AI"
+
+# [REQUIRED] Language for CLI (if type=cli-tool, else empty)
+cli_language: ""
+
+# [REQUIRED] Target MCU platform (if type=microcontroller, else empty)
+mcu_platform: ""
+
+# =============================================================================
+# CORE FEATURES (MVP Scope)
+# =============================================================================
+
+features:
+    - name: "data-ingestion-orchestrator"
+      description: |
+          Automated, continuous data collection from dual sensor layers:
+          1. Official channels (RSS/API):
+             - OpenAI API blog, release notes, changelog
+             - Google Gemini release notes & documentation
+             - Anthropic documentation & release announcements
+             - AWS Bedrock, Azure AI services blogs
+             - Meta, NVIDIA, Mistral, Cohere official channels
+          2. Weak signals (web-scraping, APIs):
+             - GitHub trending repos (AI organizations: anthropics/, meta-llama/, mistral-ai/, etc.)
+             - ArXiv feeds (cs.AI, cs.CL, cs.LG) + clustering by keyword
+             - Hacker News API (techfocus filter)
+             - Product Hunt (AI tag)
+             - VC/tech blogs (a16z, Sequoia, NFX) RSS feeds
+             - Curated X/Twitter lists (researchers, founders, ML infra)
+      technical_details: |
+          - Python ETL pipeline (cron-based or event-driven)
+          - RSS/Atom aggregators for official channels
+          - Web scraping (BeautifulSoup, Playwright) for unstructured sources
+          - API integrations (GitHub, ArXiv, HN, PH)
+          - Raw data stored in ingestion-layer queue (SQS/RabbitMQ)
+          - Deduplication logic (hash-based, temporal windowing)
+      data_flow: "Source → ETL → Raw Data Store → Preprocessing"
+
+    - name: "capability-delta-extraction"
+      description: |
+          LLM-powered analysis to convert raw AI news into structured capability deltas.
+          For each ingested item, an LLM prompt:
+          1. Identifies all new features/improvements
+          2. Maps to capability categories:
+             - Context processing (token limits, memory, persistent state)
+             - Reasoning depth (chain-of-thought, planning, multi-step)
+             - Multi-step autonomy (agentic behavior, tool orchestration)
+             - Tool use & code execution (API calls, custom functions, interpreter)
+             - Multimodality (text, vision, audio, video support)
+             - On-premise / deployment flexibility (self-hosted, restricted regions)
+             - Cost-efficiency (tokens-per-dollar, latency, throughput)
+             - Autonomy level (supervised vs unsupervised, oversight required)
+             - Persistence (long-term memory, state retention, knowledge base)
+             - Self-improvement (fine-tuning, adaptation, learning from feedback)
+             - Integration depth (API quality, SDK maturity, plugin ecosystem)
+             - Governance / Security fit (GDPR-compliance, data residency, audit trails)
+          3. Quantifies delta magnitude (0=no change, 1=minor, 2=major)
+          4. Generates JSON output with structured deltas
+      example_prompt: |
+          "Gegeben ist folgende Release-Note. Identifiziere alle neuen Fähigkeiten.
+          Ordne jede Entdeckung unserer Capability-Karte zu und schätze die Magnitude.
+          Antworte nur in JSON Format: {\"capability\": \"...\", \"delta_score\": X, \"facts\": [...]}"
+      livemodel_requirement: "Claude Opus 4.6 or GPT-4o or equivalent (multi-modal reasoning)"
+
+    - name: "capability-landscape-database"
+      description: |
+          Versioned, evolving knowledge base tracking all identified capabilities + historical deltas.
+          Serves as the canonical "capability map" for the platform.
+
+          Data schema:
+          - Capability ID (uuid)
+          - Capability name & category (text)
+          - Current level (numeric score: 0-10)
+          - Historical timeline (deltas per date, per vendor)
+          - Associated vendors/models affected
+          - First detected date, last updated
+          - Evidence links (sources, citations)
+          - Maturity (research vs production)
+      storage: |
+          - Primary: PostgreSQL (relational data, versioning)
+          - Secondary: Vector DB (Pinecone/Weaviate) for semantic search
+          - Time-series metrics (InfluxDB or similar)
+      queries_supported: |
+          - "Show me all capability deltas in last 7 days"
+          - "Which vendor leads in [capability]?"
+          - "How has context window evolved?"
+          - "Compare reasoning depth: Anthropic vs OpenAI"
+
+    - name: "business-impact-mapper"
+      description: |
+          LLM-driven mapping of capability deltas → business problem classes.
+
+          Problem classes (pre-defined matrix):
+          1. Information fragmentation (scattered data, siloed systems)
+          2. Knowledge loss (manual steps, context switching)
+          3. Manual handoffs & integration friction (inter-team delays)
+          4. High repetitivity (redundant manual tasks, copy-paste)
+          5. Decision uncertainty (lack of data synthesis, slow insights)
+          6. Long processing cycles (batch-heavy, slow turnarounds)
+          7. Documentation burden (manual record-keeping, audit trails)
+          8. Lack of transparency (hidden processes, hard to audit)
+          9. Skill/talent constraints (hard-to-automate knowledge work)
+
+          For each significant capability delta, LLM executes:
+          - Prompt: "Which of these 9 business problem classes can now be better addressed?"
+          - Output: Impact statement, e.g.:
+            "Problem [X: 'High Repetitivity'] can now be solved because Capability 
+            [Y: 'Multi-step Autonomy'] rose by Δ factor [5], enabling Process [A: 'Invoice 
+            Extraction'] to be fully automated instead of 80% automated."
+
+      template_output: |
+          **New Opportunity Detected:**
+          Problem "[NAME]" can now be better solved because "[CAPABILITY]" improved 
+          by factor [Δ], enabling [PROCESS] to be automated/optimized.
+
+      structured_output: "JSON with {problem_class, capability, delta_factor, process_name, readiness_level}"
+
+    - name: "disruption-scoring-engine"
+      description: |
+          Quantitative scoring model to rank capability shifts by strategic impact.
+
+          Scorecard dimensions (weighted):
+          1. Vendor leadership (hoch): Top-7 vendor (OpenAI, Google, Anthropic, MS, Meta, AWS, NVIDIA) = +2, others = +1
+          2. Novelty/substantiality (hoch): Fundamental leap (10x improvement) = +2, incremental = +1, marketing only = 0
+          3. Distribution potential (mittel): Research only = 0, early adopter = +1, enterprise-ready = +2
+          4. Open-source / on-prem (mittel): Self-hosted option = +1
+          5. Cost reduction (mittel): 5-10x savings = +1, >10x = +2
+          6. Momentum/trend (mittel): GitHub velocity, ArXiv cluster growth, trending score
+          7. Market hype (niedrig): Weight down if only marketing buzz (adjust via manual flag)
+          8. Multi-signal confirmation (niedrig): +bonus if 2+ independent sources align
+
+          Aggregation: Weighted sum → disruption score
+          Alert threshold: Score ≥ 6 triggers notification
+
+      output: "Ranked list of capabilities by disruption_score; high-score items bubble to top"
+
+    - name: "dashboard-and-visualization"
+      description: |
+          Web-based analytics UI showing:
+          - Capability trend charts (time-series plots: token limits, reasoning depth, cost evolution)
+          - Heatmap: business problem (rows) vs. capability category (columns) with color intensity = addressability
+          - Top disruptors this week (table: capability, delta, score, sources)
+          - Filter/drill-down: by vendor, by problem class, by time window
+          - Alert feed (recent high-score events)
+          - Search: full-text query on capability names, vendor names, problem statements
+          - Export: CSV, PDF reports
+
+      technology: "React/Next.js frontend + D3.js/Recharts for charting, Tailwind CSS for design"
+      accessibility: "WCAG 2.1 AA"
+
+    - name: "alerting-and-notification-system"
+      description: |
+          Configurable alert rules and delivery channels.
+
+          Trigger types:
+          - Score threshold (score ≥ 6 → immediate Slack/email)
+          - Daily digest (end-of-day rollup of all events score ≥ 3)
+          - Weekly briefing (curated highlights + trends + recommendations)
+          - Custom alerts (user-defined: e.g., "notify if [vendor] announces [capability]")
+
+          Channels:
+          - Slack (rich formatting, interactive buttons for drill-down)
+          - Email (HTML + plaintext)
+          - Teams (Microsoft Teams integration)
+          - In-app notifications (push + banner)
+
+          Template: Alert emails include impact statement, sources, related business problems
+
+      delivery_engine: "AWS SNS / Azure Event Grid or custom queue-based system"
+
+    - name: "weekly-briefing-generator"
+      description: |
+          Automated synthesis of all week's findings into executive-ready report.
+
+          Report structure:
+          1. Executive summary (1-2 sentences on biggest disruption)
+          2. Top disruptors table (name, score, capability delta, business impact)
+          3. Capability trend section (graphs: what improved, what stagnated)
+          4. Problem-opportunity matrix (which business problems now have new solutions)
+          5. Recommended actions (e.g., "Evaluate vendor X for problem Y given capability Z")
+          6. Source citations + methodology note
+
+          Delivery: Email (HTML + PDF attachment), Slack thread, dashboard widget
+          Cadence: Weekly (configurable day/time)
+
+      personalization: "Can filter by problem class or vendor of interest"
+
+# [OPTIONAL] Out-of-scope for MVP
+out_of_scope:
+    - "Mobile app (web-responsive only for MVP)"
+    - "Third-party OAuth (Google/GitHub login) — planned v2"
+    - "Multi-tenant team management — planned v2"
+    - "Custom integrations with enterprise CRM/ERP systems — planned v2"
+    - "Predictive modeling / early-warning ML — planned v2"
+    - "White-label / private-label deployment — planned v2"
+    - "Advanced NLP fine-tuning on proprietary models — planned v2"
+    - "Real-time monitoring dashboard (polling-based sufficient for MVP)"
+
+# =============================================================================
+# DATA MODEL
+# =============================================================================
+
+data_model:
+    - entity: "IngestedSource"
+      description: "Raw ingested data from any source (blog post, GitHub repo, ArXiv paper)"
+      fields:
+          - "id (uuid)"
+          - "source_type (enum: blog, github, arxiv, hn, ph, twitter, vcblog)"
+          - "source_url (text)"
+          - "title (text)"
+          - "content (text)"
+          - "publish_date (datetime)"
+          - "ingestion_date (datetime)"
+          - "vendor (text, nullable)"
+          - "raw_metadata (json)"
+
+    - entity: "CapabilityDelta"
+      description: "Extracted capability shift with quantified impact"
+      fields:
+          - "id (uuid)"
+          - "source_id (fk to IngestedSource)"
+          - "capability_category (enum: context, reasoning, autonomy, tool-use, multimodality, deployment, cost-efficiency, autonomy-level, persistence, self-improvement, integration, governance)"
+          - "capability_name (text)"
+          - "delta_magnitude (0-2, quantized scale)"
+          - "delta_numeric (nullable, for specific metrics like token count)"
+          - "old_value / new_value (text, for context like '100k tokens → 1M tokens')"
+          - "confidence_score (0-1)"
+          - "vendors_affected (array of text)"
+          - "detected_date (datetime)"
+          - "evidence_snippets (array of text)"
+
+    - entity: "BusinessProblemMapping"
+      description: "Link between capability delta and addressable business problem"
+      fields:
+          - "id (uuid)"
+          - "delta_id (fk to CapabilityDelta)"
+          - "problem_class (enum: fragmentation, knowledge-loss, manual-handoffs, repetitivity, decision-uncertainty, long-cycles, documentation-burden, transparency-gap, talent-constraints)"
+          - "problem_description (text)"
+          - "addressable_process_name (text)"
+          - "impact_statement (text, auto-generated)"
+          - "readiness_level (enum: experimental, early-adopter, production-ready)"
+          - "mapped_date (datetime)"
+          - "mapper_version (text, e.g., 'claude-opus-4.6')"
+
+    - entity: "DisruptionScore"
+      description: "Quantitative ranking of capability deltas"
+      fields:
+          - "id (uuid)"
+          - "delta_id (fk to CapabilityDelta)"
+          - "vendor_leadership_score (0-2)"
+          - "novelty_score (0-2)"
+          - "distribution_potential_score (0-2)"
+          - "open_source_score (0-1)"
+          - "cost_reduction_score (0-2)"
+          - "momentum_score (0-2)"
+          - "hype_adjustment (0-1, downward)"
+          - "multi_signal_bonus (0-1)"
+          - "total_disruption_score (numeric, weighted sum)"
+          - "alert_triggered (boolean)"
+          - "calculated_date (datetime)"
+
+    - entity: "CapabilityLandscapeVersion"
+      description: "Snapshot of evolving capability map at a point in time"
+      fields:
+          - "id (uuid)"
+          - "version_number (integer)"
+          - "timestamp (datetime)"
+          - "capability_snapshots (json, aggregate of all current capability states)"
+          - "deltas_since_last_version (array of delta_ids)"
+          - "notes (text)"
+
+    - entity: "User"
+      description: "Platform user (from Supabase Auth)"
+      fields:
+          - "id (uuid, from Supabase)"
+          - "email (text)"
+          - "organization (text)"
+          - "role (enum: admin, analyst, stakeholder, viewer)"
+          - "created_at (datetime)"
+          - "preferences (json: alert_channels, problem_class_filters, vendor_filters)"
+
+    - entity: "AlertLog"
+      description: "Audit trail of all alerts generated and delivered"
+      fields:
+          - "id (uuid)"
+          - "disruption_score_id (fk)"
+          - "user_id (fk to User, nullable)"
+          - "alert_type (enum: threshold, digest, briefing, custom)"
+          - "channel (enum: slack, email, teams, in-app)"
+          - "sent_timestamp (datetime)"
+          - "delivery_status (enum: pending, sent, failed)"
+          - "recipient (text)"
+
+# =============================================================================
+# NON-FUNCTIONAL REQUIREMENTS
+# =============================================================================
+
+non_functional:
+    target_concurrent_users: 100
+
+    uptime_sla: "99.5% (best-effort for MVP; 99.9% target for v2)"
+
+    page_load_target_seconds: 2.5
+
+    accessibility: "WCAG 2.1 AA"
+
+    supported_browsers:
+        - "Chrome >= 120"
+        - "Firefox >= 120"
+        - "Safari >= 17"
+        - "Edge >= 120"
+
+    mobile_responsive: true
+
+    data_regions:
+        - "EU (primary: eu-central-1)"
+        - "US (fallback: us-east-1)"
+
+    latency_requirements: |
+        - Dashboard load: < 2.5s (LCP Core Web Vital)
+        - Alert delivery: < 5 minutes after disruption score crosses threshold
+        - Weekly briefing generation: < 30 minutes
+        - Capability delta extraction (per item): < 10 seconds (LLM call + storage)
+
+    throughput: |
+        - Ingest capacity: 1000+ new sources/day
+        - LLM extraction: 500 deltas/week (batched, off-peak)
+        - Alert throughput: 10k+ per week (scalable via queue)
+
+    data_consistency: "Eventual consistency acceptable for delta extraction; strong consistency for alert logs"
+
+    retention_policy: |
+        - Raw ingested sources: 1 year (cost optimization via S3 Glacier after 3 months)
+        - Capability deltas: indefinite (historical trend analysis)
+        - Alert logs: 2 years (audit trail)
+        - User activity logs: 6 months
+
+# =============================================================================
+# DESIGN PREFERENCES
+# =============================================================================
+
+design:
+    palette_hint: "professional tech: slate/gray with accent colors for high-disruption alerts (red/orange)"
+
+    dark_mode: true
+
+    ui_references:
+        - "Datadog (clean analytics UX)"
+        - "Notion (organized information hierarchy)"
+        - "Grafana (dashboard flexibility)"
+
+    design_principles: |
+        - Signal clarity: Distinguish hype from genuine capability (visual hierarchy)
+        - Actionability: Every screen should suggest a next step
+        - Traceability: Always link insights back to sources
+        - Minimalism: Avoid overwhelm; surface only high-signal events
+        - Dark mode: Default for analyst workflows (reduce eye strain)
+
+# =============================================================================
+# INFRASTRUCTURE & DEPLOYMENT
+# =============================================================================
+
+infrastructure:
+    deployment_target: "AWS (Vercel for frontend, AWS services for backend)"
+
+    database:
+        primary: "RDS PostgreSQL (multi-AZ, automated backups)"
+        vector_db: "Pinecone or Weaviate (semantic search on capability names, problem descriptions)"
+        cache: "ElastiCache Redis (session management, query caching)"
+
+    compute:
+        web_frontend: "Vercel (Next.js 15 deployment)"
+        api_backend: "AWS Lambda + API Gateway (serverless, auto-scaling)"
+        async_jobs: "AWS Step Functions + Lambda (ETL workflows, LLM extraction)"
+        data_pipeline: "AWS Glue or custom Python (EC2 t3.medium for cost)"
+
+    llm_backend: |
+        - Primary: Anthropic Claude Opus 4.6 via API (structured output, reasoning)
+        - Fallback: OpenAI GPT-4o
+        - Cost: ~$0.05-0.10 per extraction (estimate: 500 items/week → $25-50/week)
+        - On-prem option (future): Self-hosted Mistral or Llama (compliance scenarios)
+
+    storage: |
+        - S3 (ingested raw content, archives)
+        - RDS (structured metadata)
+        - Pinecone/Weaviate (capability embeddings)
+
+    monitoring: |
+        - CloudWatch (AWS metrics)
+        - DataDog or New Relic (APM)
+        - PagerDuty (incident alerting)
+
+    supabase_region: "eu-central-1"
+
+    vercel_project_name: "ai-capability-radar"
+
+    custom_domain: "radar.example.com (configurable post-launch)"
+
+    security_architecture: |
+        - OAuth/SSO (Supabase Auth, optional OIDC for enterprise)
+        - Role-based access control (RBAC: admin, analyst, viewer)
+        - Audit logging (all user actions, data access)
+        - Data encryption at rest (S3 KMS, RDS encryption)
+        - TLS 1.3 for all transport
+        - Secrets management (AWS Secrets Manager for API keys)
+        - No sensitive data in LLM prompts (only public model info)
+        - GDPR-compliant data processing (DPA with cloud vendors)
+
+# =============================================================================
+# EXTERNAL INTEGRATIONS
+# =============================================================================
+
+integrations:
+    - service: "Anthropic Claude API"
+      purpose: "LLM-powered capability delta extraction and business impact mapping"
+      env_vars:
+          - "ANTHROPIC_API_KEY"
+      usage: "Batch processing, ~500 calls/week"
+
+    - service: "GitHub API"
+      purpose: "Ingest trending repositories, track open-source model releases"
+      env_vars:
+          - "GITHUB_TOKEN"
+      rate_limit: "5000 requests/hour"
+
+    - service: "ArXiv API"
+      purpose: "Fetch research papers and cluster trends in AI/ML subfields"
+      env_vars:
+          - "ARXIV_API_KEY (if required)"
+      usage: "Daily scheduled queries"
+
+    - service: "Hacker News API"
+      purpose: "Scrape technical discussions and emerging tools"
+      env_vars: []
+      rate_limit: "public API, no auth"
+
+    - service: "Product Hunt API"
+      purpose: "Track newly launched AI products and startup announcements"
+      env_vars:
+          - "PRODUCTHUNT_API_TOKEN"
+
+    - service: "AWS SNS / SQS"
+      purpose: "Alert delivery and async job queueing"
+      env_vars:
+          - "AWS_ACCESS_KEY_ID"
+          - "AWS_SECRET_ACCESS_KEY"
+
+    - service: "Slack (optional, v1)"
+      purpose: "Push alerts and weekly briefing to team channels"
+      env_vars:
+          - "SLACK_WEBHOOK_URL"
+          - "SLACK_BOT_TOKEN"
+
+    - service: "Microsoft Teams (optional, v1)"
+      purpose: "Alternative to Slack for enterprise deployments"
+      env_vars:
+          - "TEAMS_WEBHOOK_URL"
+
+    - service: "Supabase"
+      purpose: "Authentication, user management, real-time sync (optional)"
+      env_vars:
+          - "SUPABASE_URL"
+          - "SUPABASE_ANON_KEY"
+
+    - service: "Pinecone or Weaviate"
+      purpose: "Vector similarity search on capability names and descriptions"
+      env_vars:
+          - "VECTOR_DB_API_KEY"
+          - "VECTOR_DB_ENVIRONMENT"
+
+# =============================================================================
+# RISK MITIGATION STRATEGIES
+# =============================================================================
+
+risks:
+    - risk: "False positives / over-interpretation of AI hype"
+      mitigation: |
+          - Scorecard weights multi-signal confirmation (require 2+ sources)
+          - Threshold alerts only for score ≥ 6 (filters low-confidence events)
+          - Manual review queue for high-score items before public briefing
+          - Historical capability curves to detect anomalies (e.g., sudden spikes)
+          - Bias warning flags (e.g., "high marketing activity detected, confidence lowered")
+
+    - risk: "Hype bubbles (marketing noise vs. real capability)"
+      mitigation: |
+          - LLM prompt explicitly filters for concrete metrics (token counts, benchmarks)
+          - Penalizes marketing-only announcements (scorecard "hype adjustment")
+          - Requires official documentation or benchmark links
+          - Domain expert review loop for China-specific or contested claims
+
+    - risk: "Manipulation (e.g., GitHub star-bombing, astroturfing)"
+      mitigation: |
+          - Temporal velocity analysis (detect unnatural spikes)
+          - Cross-reference with official releases (GitHub trends as secondary signal only)
+          - Monitor for account anomalies (same accounts, rapid-fire activity)
+          - Downweight GitHub signal if stars removals detected
+          - Prefer official release notes over community hype
+
+    - risk: "Data privacy / info leakage of sensitive company data"
+      mitigation: |
+          - Only ingest PUBLIC sources (no internal docs, proprietary research)
+          - Cloud LLM calls use enterprise instances (data not retained)
+          - Prompts exclude any company context or sensitive queries
+          - Audit trail of all API calls (who requested what, when)
+          - Data residency compliance: EU data stays in EU
+
+    - risk: "Bias & skew (e.g., Western vendor bias, Chinese ecosystem underrepresented)"
+      mitigation: |
+          - Dedicated Chinese AI news feed (Reuters ticker, SinaTech, DeepSeek GitHub)
+          - Translate Chinese announcements (use Claude or service)
+          - Expert review for geopolitical nuance (narrative bias flags)
+          - Scorecard treats all Top-7 vendors equally (no weighting bias)
+          - Community-sourced signals (e.g., "did we miss X?")
+
+    - risk: "Alert fatigue / signal-to-noise overwhelm"
+      mitigation: |
+          - Strict threshold (score ≥ 6 only for real-time alerts)
+          - Digest mode (daily, weekly rollups) for lower-score events
+          - User-configurable filters (subscribe to specific vendors/problems)
+          - Dedicated analyst role to pre-filter and prioritize
+          - Clarity on "why this matters" in every alert (link to business problem)
+
+    - risk: "Timeliness lag (LLM extraction bottleneck, slow-moving pipeline)"
+      mitigation: |
+          - Batch processing (off-peak hours, 10s per extraction)
+          - Parallel LLM calls (concurrent processing of multiple sources)
+          - Caching frequently-asked patterns (reduce redundant LLM calls)
+          - Alert urgency based on source recency (official release = immediate)
+          - Fallback: simple keyword detection for high-confidence patterns
+
+# =============================================================================
+# IMPLEMENTATION ROADMAP
+# =============================================================================
+
+roadmap:
+    phase_1_discovery:
+        timeline: "2026-03 to 2026-04"
+        duration_weeks: 4
+        activities:
+            - "Validate concept with 5-10 target users (interviews)"
+            - "Finalize capability taxonomy & problem matrix"
+            - "Design database schema & API contracts"
+            - "Procurement: decide on LLM vendor, vector DB, hosting"
+
+    phase_2_prototype:
+        timeline: "2026-04 to 2026-05"
+        duration_weeks: 4
+        activities:
+            - "Build data ingestion pipeline (RSS, GitHub API, basic web scraping)"
+            - "Implement LLM extraction service (delta identification)"
+            - "Create simple Capability Landscape DB (PostgreSQL schema)"
+            - "Proof-of-concept: 1 week of seeded data through pipeline"
+
+    phase_3_core_features:
+        timeline: "2026-05 to 2026-06"
+        duration_weeks: 4
+        activities:
+            - "Finalize Business Impact Mapper (LLM prompts + problem matrix)"
+            - "Build Disruption Scoring Engine (weighted formula, threshold logic)"
+            - "Basic dashboard (React component library, D3 charts)"
+            - "Internal testing: iterate on LLM quality"
+
+    phase_4_alerts_and_briefings:
+        timeline: "2026-06 to 2026-07"
+        duration_weeks: 3
+        activities:
+            - "Alert system (SNS/SQS, email, in-app)"
+            - "Weekly briefing generator (HTML email template)"
+            - "Slack integration (webhooks, rich formatting)"
+            - "Pilot: daily/weekly reports to internal team"
+
+    phase_5_beta_launch:
+        timeline: "2026-07 to 2026-08"
+        duration_weeks: 4
+        activities:
+            - "Security hardening (auth, RBAC, audit logs)"
+            - "Observability: logging, monitoring, alerting for ops"
+            - "Capacity planning: test 1k concurrent users"
+            - "Beta release to 5-10 friendly customers (NDA)"
+            - "Feedback loops: iterate on UX, accuracy"
+
+    phase_6_optimization_and_scale:
+        timeline: "2026-08 to 2026-09"
+        duration_weeks: 4
+        activities:
+            - "Refine Disruption Scorecard (analyze false positives, user feedback)"
+            - "Add ArXiv and Product Hunt systematic ingestion"
+            - "Improve LLM extraction quality (prompt engineering, few-shot examples)"
+            - "Performance optimization (query caching, indexing)"
+
+    phase_7_advanced_features_v1:
+        timeline: "2026-09 to 2026-11"
+        duration_weeks: 8
+        activities:
+            - "Enhanced visualizations (heatmaps, trend forecasts)"
+            - "Advanced search & filter UI (full-text, faceted)"
+            - "Custom alert rules (user-defined triggers)"
+            - "Teams integration (alternative to Slack)"
+            - "API for third-party integrations"
+            - "Data export (CSV, PDF reports)"
+
+    phase_8_production_hardening:
+        timeline: "2026-11 to 2026-12"
+        duration_weeks: 4
+        activities:
+            - "Security audit & penetration testing"
+            - "GDPR/compliance review"
+            - "Load testing (10k concurrent users)"
+            - "Incident response runbooks"
+            - "Documentation (user guide, API docs, runbooks)"
+
+    phase_9_public_launch:
+        timeline: "2027-01 to 2027-02"
+        duration_weeks: 4
+        activities:
+            - "General availability launch (pricing, terms)"
+            - "Marketing campaign (webinars, content, partnerships)"
+            - "Sales enablement (demo, case studies)"
+            - "Community engagement (feedback forum, roadmap)"
+
+    phase_10_v2_enhancements:
+        timeline: "2027-03 onwards"
+        duration_weeks: ongoing
+        planned_features:
+            - "Predictive modeling: early-warning ML (forecast disruptions)"
+            - "White-label / private-label deployment"
+            - "CRM/ERP integrations (Salesforce, Jira, Confluence)"
+            - "Multi-tenant team management"
+            - "On-prem deployment option (Kubernetes)"
+            - "OAuth (Google, GitHub) + SSO (OKTA, Azure AD)"
+            - "Advanced NLP fine-tuning on proprietary models"
+            - "Scenario planning tool (what-if analysis)"
+            - "Community knowledge sharing & API"
+
+# =============================================================================
+# SUCCESS METRICS & KPIs
+# =============================================================================
+
+success_metrics:
+    business_kpis:
+        - "Time-to-insight: avg. < 2 hours from announcement to briefing"
+        - "Accuracy: > 80% of flagged capabilities rated 'actionable' by users"
+        - "User engagement: > 40% weekly active user rate"
+        - "Customer retention: > 90% after first 90 days"
+        - "NPS score: > 50 by end of year"
+
+    product_kpis:
+        - "Data freshness: 95% of events ingested within 6 hours"
+        - "Alert precision: < 5% false positive rate (score ≥ 6)"
+        - "LLM extraction quality: < 3% of deltas require manual correction"
+        - "Dashboard uptime: > 99.5%"
+        - "Page load time: < 2.5s (Core Web Vitals LCP)"
+
+    adoption_kpis:
+        - "Onboarding completion: > 80% within 2 days"
+        - "Feature usage: > 60% use briefing feature; > 40% use custom filters"
+        - "Cost per acquisition: < $200 for early adopters"
+        - "Net revenue retention: > 110% by year 2"
+
+# =============================================================================
+# ADDITIONAL NOTES & CONTEXT
+# =============================================================================
+
+notes: |
+    ### Strategic Context
+    AI is transitioning from hype to operational infrastructure in 2026. This platform exists to help enterprises 
+    distinguish genuine capability advances (that enable new automation, cost reduction, or decision-making) 
+    from marketing noise. The core value is in **mapping** (capability → business problem) and **timing** 
+    (alerting when a problem becomes newly solvable).
+
+    ### Key Design Decisions
+    1. **Dual-layer ingestion**: Official channels (high-trust, lower volume) + weak signals (GitHub, ArXiv, 
+       community) provide breadth and novelty detection.
+    2. **LLM-powered extraction**: Rather than regex/heuristics, we use Claude/GPT to reason about capability 
+       deltas, reducing manual taxonomy updates.
+    3. **Business impact first**: A capability is only interesting if it solves a *known* business problem 
+       (fragmentation, repetitivity, etc.). This prevents rabbit holes.
+    4. **Scoring discipline**: The Disruption Scorecard quantifies impact, reducing subjective "is this important?" 
+       debates. Thresholds filter noise.
+    5. **Weekly cadence**: Not real-time (overkill for most use cases), not quarterly (too stale). Weekly 
+       briefings balance timeliness with signal clarity.
+
+    ### Open Questions (To Be Resolved in Discovery Phase)
+    - Pricing model: Per-user? Per-org? Freemium?
+    - Geographic expansion: Start EU-only (GDPR compliance) or global?
+    - Vertical focus: Generic (all industries) or vertical-specific (finance, healthcare, etc.)?
+    - White-label potential: Early, or post-MVP?
+    - Community features: Shared insights, crowd-sourced signals? (later phase)
+
+    ### Known Vendor Landscape
+    - Official sources monitored: OpenAI, Google DeepMind (Gemini), Anthropic (Claude), AWS, Microsoft, Meta, NVIDIA, 
+      Mistral, Cohere, xAI, Perplexity, Apple (MLX), Chinese vendors (Baidu Ernie, Alibaba Qwen, DeepSeek).
+    - Key recent capability shifts (Feb 2026 snapshot):
+      * Google: Computer Use tool (screen control)
+      * Anthropic: Memory tool, context editing, Claude Sonnet 4.6
+      * Mistral: Voxtral Transcribe 2 (voice with diarization)
+      * NVIDIA: Blackwell Ultra GPUs (35x cost reduction)
+      * Apple: On-device foundation models (3B params, multimodal)
+
+    ### Technology Philosophy
+    - Serverless-first (AWS Lambda, Vercel): Lower ops overhead for early-stage
+    - LLM-native: Lean into structured output, prompting discipline
+    - Open standards: PostgreSQL, REST APIs (avoid vendor lock-in)
+    - Progressive enhancement: MVP with polling; later, real-time via webhooks
+
+    ### Competitive Landscape
+    - No direct competitor doing exactly this (capability mapping + business problem synthesis)
+    - Closest: AI conference coverage (Lenny's List), VC blogs (a16z), newsletters (The Batch, Import AI)
+    - Differentiation: Automated, structured, business-focused (not researcher-focused)
+
+    ### Legal / Compliance Considerations
+    - Data processing: Only *public* sources; no proprietary training data
+    - LLM privacy: Use enterprise API instances; no data retention
+    - GDPR: EU data residency, DPA with cloud vendors
+    - SOC2/ISO27001: Target by GA (Q1 2027)
+
+    ### Customer Personas & Use Cases
+    1. **Enterprise AI/Strategy Lead**: "Is this disruption relevant to our 5-year roadmap?"
+    2. **Product Manager (Automation)**: "Can we use this new capability to unlock a faster feature?"
+    3. **Business Automation Manager**: "Our current invoice extraction is 80% accurate. Can this new LLM improve it?"
+
+    ### Feedback Incorporation Loop
+    - Beta phase (Aug 2026): 5-10 pilot customers provide weekly feedback
+    - Iterate: Refine problem matrix, improve LLM prompts, adjust scorecard weights
+    - Public launch (Feb 2027): Based on learning, finalize product positioning and pricing
