@@ -1,0 +1,39 @@
+name: Weekly Briefing
+
+on:
+  schedule:
+    # Every Monday at 07:30 UTC (30 min after ingestion starts)
+    - cron: '30 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      week_start:
+        description: 'ISO date for week start (YYYY-MM-DD), leave empty for auto'
+        required: false
+        default: ''
+
+jobs:
+  generate-briefing:
+    name: Generate weekly briefing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call briefing generation API
+        run: |
+          BODY="{}"
+          if [ -n "${{ github.event.inputs.week_start }}" ]; then
+            BODY="{\"week_start\": \"${{ github.event.inputs.week_start }}\"}"
+          fi
+
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            "${{ secrets.APP_URL }}/api/admin/briefings/generate")
+
+          echo "Response: $(cat /tmp/response.json)"
+          echo "HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "202" ]; then
+            echo "Briefing generation failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
