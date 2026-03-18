@@ -67,7 +67,7 @@ Email/password registration and sign-in via Supabase Auth. Includes profile crea
 - As a user, I want to configure my alert preferences (channels, threshold, vendor filters) so that I receive relevant notifications.
 
 ### Acceptance Criteria
-- [ ] AC-auth-1: User can register with email + password; receives a verification email; cannot access dashboard until verified.
+- [ ] AC-auth-1: Any visitor can register with email + password at `/register`; receives a verification email; cannot access dashboard until email is verified. No invite code or admin approval required.
 - [ ] AC-auth-2: User can sign in with correct credentials and is redirected to `/dashboard`.
 - [ ] AC-auth-3: Incorrect credentials show an error message that does not reveal whether the email exists.
 - [ ] AC-auth-4: Password reset sends a time-limited magic link to the registered email.
@@ -958,7 +958,7 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 |---|----------|----------|--------------|
 | OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~ | RESOLVED | ID = `ai-radar`; production repo = `https://github.com/aisebastianraguseo-web/ai-radar.git` |
 | OQ-2 | ~~Vercel Cron vs alternative for scheduled jobs~~ | RESOLVED | GitHub Actions Cron (free); Vercel Hobby plan used; Supabase Edge Functions for alert delivery |
-| OQ-3 | The intake does not specify a pricing or billing model. Should user registration be open (anyone can sign up) or invite-only for v1? | MED | No — assumption: invite-only (admin creates users) for v1 |
+| OQ-3 | ~~User registration: open vs. invite-only for v1~~ | RESOLVED | **Open registration** — anyone with a valid email can sign up; no invite flow needed |
 | OQ-4 | The heatmap (problem class × capability category) requires an "addressability score" aggregation — which formula? Intake does not specify. | MED | No — assumption: mean `delta_magnitude` of all mapped deltas in that cell, last 30 days |
 | OQ-5 | For the daily digest, should users receive a digest even if there are no new events ≥ threshold? | LOW | No — assumption: skip digest if no events above threshold |
 | OQ-6 | Disruption score dimension "momentum" relies on GitHub velocity and ArXiv cluster growth signals. These require time-series comparison. Is a simple "items mentioning this capability in last 24h" count acceptable for v1? | MED | No — assumption: yes, simple mention count for v1 |

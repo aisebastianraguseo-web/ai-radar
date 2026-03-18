@@ -15,12 +15,12 @@
 | Consistency | WARN |
 | Security Review | PASS |
 | Scope Realism | WARN |
-| Open Questions | 4 unresolved (OQ-1, OQ-2 resolved) |
+| Open Questions | 3 unresolved, 0 blocking (OQ-1, OQ-2, OQ-3 resolved) |
 | Estimated Build Cost | ~$2–4 (pipeline tokens, Sonnet 4.6) |
 | Infrastructure Cost/Month | ~$10–40 (weekly cadence, free tiers) |
 | External Accounts Needed | 9 (GitHub Actions + CRON_SECRET added) |
 
-**Overall Recommendation:** READY TO BUILD (with notes on OQ-3 — invite-only vs. open registration should be confirmed before scaffold, as it affects auth flow complexity)
+**Overall Recommendation:** READY TO BUILD — all blocking questions resolved. Proceed to Phase 3 (Scaffold).
 
 ---
 
@@ -262,13 +262,13 @@ No blocking auth issues found.
 |---|----------|----------|--------------|
 | OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~ | RESOLVED | ID = `ai-radar`; repo = `https://github.com/aisebastianraguseo-web/ai-radar.git` |
 | OQ-2 | ~~Vercel Cron vs. alternative scheduler~~ | RESOLVED | GitHub Actions Cron (free, weekly); Supabase Edge Function for extraction |
-| OQ-3 | User registration: open vs. invite-only for v1 | MED | **YES** — affects signup page, admin flow, and RLS |
+| OQ-3 | ~~User registration: open vs. invite-only~~ | RESOLVED | **Open registration** — public `/register` page, email verification required |
 | OQ-4 | Heatmap addressability score formula | MED | No (assumption: mean delta_magnitude last 30 days) |
 | OQ-5 | Empty digest when no events above threshold | LOW | No (assumption: skip) |
 | OQ-6 | Momentum score formula | MED | No (assumption: mention_count ≥5→2, ≥2→1, else 0) |
 
 **Questions that BLOCK the build:**
-- **OQ-3** (invite-only vs. open registration): The scaffold agent cannot generate the correct auth flow without this answer.
+- None. All blocking questions resolved.
 
 **Questions that can be resolved later:**
 - OQ-4, OQ-5, OQ-6 — all have documented assumptions; build can proceed.
