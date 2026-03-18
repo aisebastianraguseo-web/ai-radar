@@ -1,8 +1,9 @@
 # Spec Validation Report: ai-radar
 
 **Validated:** 2026-03-18T00:00:00Z
-**Spec Version:** 1.0
+**Spec Version:** 1.1
 **Validator:** spec-validator v1
+**Updated:** 2026-03-18T00:00:00Z (v1.1: weekly cadence, GitHub Actions cron, free-tier infra, OQ-1/OQ-2 resolved)
 
 ---
 
@@ -14,9 +15,10 @@
 | Consistency | WARN |
 | Security Review | PASS |
 | Scope Realism | WARN |
-| Open Questions | 6 unresolved |
-| Estimated Build Cost | ~$18–28 (pipeline tokens) |
-| External Accounts Needed | 8 |
+| Open Questions | 4 unresolved (OQ-1, OQ-2 resolved) |
+| Estimated Build Cost | ~$2–4 (pipeline tokens, Sonnet 4.6) |
+| Infrastructure Cost/Month | ~$10–40 (weekly cadence, free tiers) |
+| External Accounts Needed | 9 (GitHub Actions + CRON_SECRET added) |
 
 **Overall Recommendation:** READY TO BUILD (with notes on OQ-3 — invite-only vs. open registration should be confirmed before scaffold, as it affects auth flow complexity)
 
@@ -84,7 +86,7 @@ All features have ≥ 2 user stories and ≥ 3 acceptance criteria. **PASS.**
 
 ### 2.2 Contradictions Found
 
-- **WARN — Section 3 (capability-delta-extraction) vs. Section 4.2 (schema):** Section 3 states extraction runs within 10 minutes of ingestion. However, Vercel Hobby plan does not support Cron Jobs shorter than daily. Vercel Pro supports 1-minute Cron. Supabase Edge Functions triggered by DB insert are the correct mechanism. This is acknowledged in OQ-2 but not resolved in the spec. **Recommendation:** Feature agent should implement Supabase `pg_notify` + Edge Function worker for sub-10-minute extraction latency (not Vercel Cron for the extraction step specifically).
+- ~~**WARN — Vercel Cron vs. extraction latency**~~ **RESOLVED (v1.1):** GitHub Actions handles weekly ingestion trigger; Supabase Edge Function (DB trigger on insert) handles extraction within 10 minutes. Vercel Hobby plan used — no Cron dependency on Vercel.
 
 - **WARN — Section 6.2 (Security) vs. Section 8 (External Dependencies):** Section 6.2 mentions `@upstash/ratelimit` for rate limiting, but Section 8 does not list Upstash as an external dependency with credentials. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to external dependencies.
 
@@ -177,13 +179,14 @@ No blocking auth issues found.
 
 | Service | Risk | Mitigation |
 |---------|------|-----------|
-| Anthropic API | Cost overrun if extraction runs uncapped | Implement per-run extraction limit (AC-delta-6); monitor token usage |
-| GitHub API | 403 on rate limit (5000 req/hr) | Cache responses; run ingestion at off-peak hours |
+| Anthropic API | Cost overrun if extraction runs uncapped | Per-run extraction limit (AC-delta-6); weekly cadence keeps costs at $10–40/mo |
+| GitHub API | 403 on rate limit (5000 req/hr) | Cache responses; weekly run uses < 100 requests |
 | Product Hunt API | Auth complexity, rate limits | Mark as P2 — skip if auth blocks scaffold |
 | ArXiv API | Atom feed may be slow / unreliable | Implement timeout + skip on failure |
 | Resend | Email deliverability (DNS setup required) | Must verify sending domain before go-live |
-| Vercel Cron | Pro plan required for < 1 day intervals | Confirm Vercel Pro in project setup |
-| Supabase | Edge Function concurrency limits on free tier | Pro plan recommended for production |
+| ~~Vercel Cron~~ | ~~Pro plan required~~ | RESOLVED: GitHub Actions used instead; Vercel Hobby sufficient |
+| Supabase | Free tier pauses after 7 days inactivity | Weekly GitHub Actions cron keeps project active |
+| GitHub Actions | Cron reliability (best-effort, not guaranteed exact time) | Acceptable for weekly briefing; max ~5 min delay |
 
 ### 4.3 Scope Creep Risks
 
@@ -197,46 +200,57 @@ No blocking auth issues found.
 
 ### 5.1 Build Token Estimate
 
-| Phase | Agent | Est. Tokens |
-|-------|-------|-------------|
-| 1. Spec | spec-agent | ~20,000 |
-| 2. Validation | spec-validator | ~10,000 |
-| 3. Scaffold | scaffold-agent + infra-agent | ~30,000 |
-| 4. Features | feature-agent × 8 features | ~160,000 |
-| 5. Gate | gate-agent | ~8,000 |
-| 6. Fix | fix-agent (1-3 runs) | ~15,000–45,000 |
-| **Total** | | **~243,000–273,000** |
+| Phase | Agent | Est. Tokens | Basis |
+|-------|-------|-------------|-------|
+| 1. Spec | spec-agent | ~20,000 | Intake (750 lines) + governance → spec.md |
+| 2. Validation | spec-validator | ~10,000 | spec.md → validation report |
+| 3. Scaffold | scaffold-agent | ~30,000 | spec.md → ~60 boilerplate files |
+| 4. Features | feature-agent × 8 | ~160,000 | ~20k/feature (read context + write code) |
+| 5. Gate | gate-agent | ~8,000 | Read code + tool output → gate report |
+| 6. Fix | fix-agent (1 run) | ~15,000 | Gate report + failing files → fixes |
+| **Total** | | **~243,000** | |
 
-At Claude Sonnet 4.6 pricing (~$3/M input, ~$15/M output, mix ~$8/M):
-**Estimated build cost: ~$18–22**
+**Price calculation (Sonnet 4.6):**
+- Input tokens (~70%): 170k × $3/M = **$0.51**
+- Output tokens (~30%): 73k × $15/M = **$1.09**
+- **Total: ~$1.60–$4** (depending on fix iterations)
 
-At Claude Opus 4.6 pricing (~$15/M input, ~$75/M output, mix ~$38/M):
-**Estimated build cost: ~$85–100** (if using Opus for all phases)
+**Price calculation (Opus 4.6):**
+- Input tokens: 170k × $15/M = $2.55
+- Output tokens: 73k × $75/M = $5.48
+- **Total: ~$8–12** (depending on fix iterations)
 
-### 5.2 Infrastructure Cost Estimate (Monthly)
+> Note: The earlier estimate of $18–22 and $85–100 was incorrect — it incorrectly multiplied total tokens by the blended rate without separating input/output ratios. Corrected above.
 
-| Service | Free Tier | Estimated Monthly (MVP, ~50 users) |
-|---------|-----------|--------------------------------|
-| Supabase | 500MB DB, 50k auth | $0 (free) → $25 (Pro, recommended) |
-| Vercel | — | $20 (Pro, required for Cron) |
-| Resend | 3000 emails/mo | $0 (free tier sufficient) |
-| Anthropic API | — | ~$25–50/week → $100–200/mo |
-| GitHub API | free | $0 |
-| Product Hunt API | free tier | $0 |
-| **Total** | | **~$145–245/month at launch** |
+### 5.2 Infrastructure Cost Estimate (Monthly, weekly cadence)
+
+| Service | Plan | Cost/Mo | Notes |
+|---------|------|---------|-------|
+| Supabase | Free | **$0** | 500MB DB, Edge Functions; weekly cron prevents pause |
+| Vercel | Hobby | **$0** | No Cron needed; GitHub Actions handles scheduling |
+| GitHub Actions | Free | **$0** | < 2 min/week; well within 500 min/mo free tier |
+| Resend | Free | **$0** | < 3000 emails/mo for MVP |
+| Anthropic API | Pay-per-use | **$10–40** | ~50–100 extractions/week @ $0.05–0.10/call |
+| GitHub API | Free | **$0** | Public API, weekly usage far below rate limit |
+| **Total** | | **~$10–40/mo** | Scales linearly with ingestion frequency |
+
+**Scale-up triggers:**
+- Supabase Pro ($25/mo): when DB > 400MB or Edge Functions > 400k invocations/month
+- Vercel Pro ($20/mo): only if custom domain SSL automation or team features needed
+- Anthropic costs double with each 2× increase in ingestion frequency
 
 ---
 
 ## 6. External Accounts / Credentials Required
 
-- [ ] **Supabase** — Create project (eu-central-1). Collect: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- [ ] **Vercel** — Create project, connect GitHub repo. Collect: `VERCEL_TOKEN`. Upgrade to Pro plan.
+- [ ] **Supabase** — Create project (eu-central-1, free tier). Collect: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- [ ] **Vercel** — Create project (Hobby plan, free). Connect repo: `https://github.com/aisebastianraguseo-web/ai-radar.git`. Collect: `VERCEL_TOKEN`
+- [ ] **GitHub** — Repository `https://github.com/aisebastianraguseo-web/ai-radar.git`. Generate PAT (read:public) for ingestion. Collect: `GITHUB_TOKEN`. Set `CRON_SECRET` in repo Secrets → Actions.
 - [ ] **Anthropic** — Create account, enable billing. Collect: `ANTHROPIC_API_KEY`
 - [ ] **Resend** — Create account, verify sending domain. Collect: `RESEND_API_KEY`, set `RESEND_FROM_EMAIL`
-- [ ] **GitHub** — Generate PAT (read:public). Collect: `GITHUB_TOKEN`
+- [ ] **Upstash Redis** — Create free database for rate limiting. Collect: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 - [ ] **Product Hunt** — Create OAuth application. Collect: `PRODUCTHUNT_API_TOKEN`
-- [ ] **Upstash Redis** — Create database for rate limiting. Collect: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
-- [ ] **Slack** — Users configure per-workspace webhook URLs; stored in `profiles.preferences.slack_webhook_url` (not a deployment credential)
+- [ ] **Slack** — Users configure per-workspace webhook URLs in profile settings (not a deployment credential)
 - [ ] **ArXiv** — No account required (public Atom feed)
 - [ ] **Hacker News** — No account required (public API)
 
@@ -246,18 +260,18 @@ At Claude Opus 4.6 pricing (~$15/M input, ~$75/M output, mix ~$38/M):
 
 | # | Question | Severity | Blocks Build? |
 |---|----------|----------|--------------|
-| OQ-1 | Product ID: `ai-radar` (filename) vs `ai-capability-radar` (intake YAML) | LOW | No |
-| OQ-2 | Alert delivery < 5min: Vercel Cron insufficient — Supabase Edge Function trigger needed | MED | No (assumption documented) |
+| OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~ | RESOLVED | ID = `ai-radar`; repo = `https://github.com/aisebastianraguseo-web/ai-radar.git` |
+| OQ-2 | ~~Vercel Cron vs. alternative scheduler~~ | RESOLVED | GitHub Actions Cron (free, weekly); Supabase Edge Function for extraction |
 | OQ-3 | User registration: open vs. invite-only for v1 | MED | **YES** — affects signup page, admin flow, and RLS |
-| OQ-4 | Heatmap addressability score formula | MED | No (assumption documented) |
-| OQ-5 | Empty digest when no events above threshold | LOW | No |
-| OQ-6 | Momentum score formula | MED | No (mention-count assumption documented) |
+| OQ-4 | Heatmap addressability score formula | MED | No (assumption: mean delta_magnitude last 30 days) |
+| OQ-5 | Empty digest when no events above threshold | LOW | No (assumption: skip) |
+| OQ-6 | Momentum score formula | MED | No (assumption: mention_count ≥5→2, ≥2→1, else 0) |
 
 **Questions that BLOCK the build:**
 - **OQ-3** (invite-only vs. open registration): The scaffold agent cannot generate the correct auth flow without this answer.
 
 **Questions that can be resolved later:**
-- OQ-1, OQ-2, OQ-4, OQ-5, OQ-6 — all have documented assumptions; build can proceed.
+- OQ-4, OQ-5, OQ-6 — all have documented assumptions; build can proceed.
 
 ---
 
@@ -267,7 +281,7 @@ At Claude Opus 4.6 pricing (~$15/M input, ~$75/M output, mix ~$38/M):
 
 2. **Deduplication fix:** AMB-1 (7-day dedup window) should be changed to URL-lifetime uniqueness before scaffold. The current schema has `UNIQUE INDEX ... (url_hash, date_trunc(...))` which would allow re-ingestion of the same URL weekly. Recommend: `UNIQUE INDEX idx_ingested_sources_url_hash ON public.ingested_sources (url_hash)`.
 
-3. **Missing external dependency:** `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` not in spec Section 8 — added here in Section 6 (accounts checklist). Spec should be updated before scaffold.
+3. **Upstash credentials added to Section 8 of spec (v1.1):** `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` now documented. Free tier (10k requests/day) sufficient for rate limiting.
 
 4. **SSRF mitigation must be implemented in ingestion feature:** The feature agent for `data-ingestion-orchestrator` must implement a URL allowlist validation step before any `fetch()` call to external sources.
 

@@ -2,9 +2,10 @@
 
 **ID:** ai-radar
 **Type:** web-saas
-**Version:** 1.0
+**Version:** 1.1
 **Status:** draft
 **Created:** 2026-03-18T00:00:00Z
+**Updated:** 2026-03-18T00:00:00Z (v1.1: weekly cadence, GitHub Actions cron, free-tier infra, production repo added)
 
 ---
 
@@ -93,18 +94,18 @@ Email/password registration and sign-in via Supabase Auth. Includes profile crea
 **Priority:** P1
 
 ### Description
-Automated background pipeline that ingests content from two layers: (1) official vendor channels via RSS/Atom feeds and public APIs, (2) weak signals from GitHub Trending, ArXiv, Hacker News, and Product Hunt. Runs on a Vercel Cron schedule. Deduplicates sources by URL hash and stores raw content in `ingested_sources`.
+Automated background pipeline that ingests content from two layers: (1) official vendor channels via RSS/Atom feeds and public APIs, (2) weak signals from GitHub Trending, ArXiv, Hacker News, and Product Hunt. Triggered by a GitHub Actions scheduled workflow (weekly). Deduplicates sources by URL hash and stores raw content in `ingested_sources`.
 
-**Stack Mapping (Assumption):** The intake specifies Python ETL and AWS infrastructure. Per governance/stack.md, the canonical stack is Next.js + Supabase + Vercel. The ingestion pipeline is implemented as Next.js API route handlers invoked by Vercel Cron Jobs. Heavy async work (LLM extraction) is queued via Supabase `pg_notify` + Supabase Edge Function workers.
+**Stack Mapping (Assumption):** The intake specifies Python ETL and AWS infrastructure. Per governance/stack.md, the canonical stack is Next.js + Supabase + Vercel. The ingestion pipeline is implemented as Next.js API route handlers triggered via authenticated `POST /api/admin/ingest/trigger` call from a GitHub Actions Cron workflow. Heavy async work (LLM extraction) is queued via Supabase `pg_notify` + Supabase Edge Function workers.
 
-> ASSUMPTION: Python ETL replaced by TypeScript API routes + Vercel Cron. This is sufficient for ≤1000 sources/day; higher throughput is a v2 concern.
+> ASSUMPTION: Python ETL replaced by TypeScript API routes + GitHub Actions Cron (free). Vercel Hobby plan used (no Vercel Cron needed). Sufficient for weekly cadence; higher frequency is a v2 concern — increase GitHub Actions schedule interval.
 
 ### User Stories
 - As an admin, I want the system to automatically ingest AI news from official vendor channels daily so that capability data stays current.
 - As an admin, I want the ingestion log to show which sources were processed, skipped (duplicate), or errored so that I can monitor pipeline health.
 
 ### Acceptance Criteria
-- [ ] AC-ingest-1: Vercel Cron triggers ingestion at 06:00 UTC daily.
+- [ ] AC-ingest-1: GitHub Actions Cron (`.github/workflows/weekly-ingest.yml`, schedule `0 6 * * 1`) triggers ingestion every Monday at 06:00 UTC by calling `POST /api/admin/ingest/trigger` with `Authorization: Bearer $CRON_SECRET`. The API route validates the secret server-side before executing.
 - [ ] AC-ingest-2: At least the following RSS/API sources are ingested: OpenAI blog, Anthropic blog, Google DeepMind blog, GitHub Trending (AI orgs), ArXiv (cs.AI + cs.CL), Hacker News (top 50), Product Hunt (AI tag).
 - [ ] AC-ingest-3: Duplicate detection: if `source_url` already exists in `ingested_sources` within the last 7 days, the item is skipped and logged as `duplicate`.
 - [ ] AC-ingest-4: Each ingested item is stored with `source_type`, `source_url`, `title`, `content`, `publish_date`, `vendor` (nullable), `ingestion_status`.
@@ -134,7 +135,7 @@ Automated background pipeline that ingests content from two layers: (1) official
 **Priority:** P1
 
 ### Description
-LLM-powered analysis that processes ingested source items and produces structured `capability_deltas`. For each unprocessed `ingested_source`, calls the Anthropic Claude API with a structured prompt to identify capability category, delta magnitude, affected vendors, and evidence snippets. Runs as a post-ingestion step via Vercel Cron or immediate trigger.
+LLM-powered analysis that processes ingested source items and produces structured `capability_deltas`. For each unprocessed `ingested_source`, calls the Anthropic Claude API with a structured prompt to identify capability category, delta magnitude, affected vendors, and evidence snippets. Triggered automatically after ingestion completes via Supabase Edge Function (DB trigger on `ingested_sources` insert), or manually via admin endpoint.
 
 ### User Stories
 - As a platform analyst, I want each ingested item automatically analysed by an LLM so that capability shifts are identified without manual review.
@@ -368,14 +369,14 @@ Configurable alerts triggered by disruption score threshold (≥ 6 = immediate),
 **Priority:** P1
 
 ### Description
-Automated weekly report synthesised by LLM from the week's findings. Covers: executive summary, top disruptors table, capability trends, problem-opportunity matrix, and recommended actions. Delivered as email (HTML) and persisted in the dashboard. Generated every Monday at 07:30 UTC via Vercel Cron.
+Automated weekly report synthesised by LLM from the week's findings. Covers: executive summary, top disruptors table, capability trends, problem-opportunity matrix, and recommended actions. Delivered as email (HTML) and persisted in the dashboard. Generated every Monday at 07:30 UTC, triggered by a dedicated GitHub Actions workflow (`.github/workflows/weekly-briefing.yml`).
 
 ### User Stories
 - As a strategy lead, I want to receive a structured weekly briefing every Monday morning so that I start the week with strategic AI intelligence.
 - As any user, I want to view past briefings in the dashboard so that I can reference historical analysis.
 
 ### Acceptance Criteria
-- [ ] AC-brief-1: Vercel Cron triggers briefing generation at 07:30 UTC every Monday.
+- [ ] AC-brief-1: GitHub Actions Cron (`.github/workflows/weekly-briefing.yml`, schedule `30 7 * * 1`) triggers briefing generation every Monday at 07:30 UTC by calling `POST /api/admin/briefings/generate` with `Authorization: Bearer $CRON_SECRET`.
 - [ ] AC-brief-2: Briefing covers exactly the preceding 7 days (Mon 00:00 UTC → Sun 23:59 UTC).
 - [ ] AC-brief-3: Briefing contains: executive summary (1–2 sentences), top-10 disruptors table (name, score, impact), capability trends section (which categories improved/stagnated), problem-opportunity matrix (which problem classes gained new addressability), 3–5 recommended actions.
 - [ ] AC-brief-4: Briefing is generated using `claude-opus-4-6`; prompt includes the week's top disruptions and impact mappings as structured JSON context.
@@ -878,7 +879,8 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 | Real-time streaming dashboard (WebSocket) | v2 (polling sufficient for v1) |
 | Chinese AI ecosystem dedicated feed (DeepSeek, Qwen) | v2 |
 | Vector DB / semantic search (Pinecone / Weaviate) | v2 (pgvector prepared, not activated) |
-| Python ETL pipeline (AWS Glue / Airflow) | v2 (Vercel Cron sufficient for ≤1000/day) |
+| Python ETL pipeline (AWS Glue / Airflow) | v2 (GitHub Actions Cron + Next.js API routes sufficient for weekly cadence) |
+| Increased ingestion frequency (daily/hourly) | v2 (change GitHub Actions schedule; consider dedicated worker for >daily) |
 | CSV / PDF export | v2 |
 | API for third-party integrations | v2 |
 | Pricing / billing / subscription management | v2 |
@@ -892,19 +894,21 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - **Purpose:** LLM-powered capability delta extraction, business impact mapping, weekly briefing synthesis
 - **Required Credentials:** `ANTHROPIC_API_KEY`
 - **Account Setup:** Create account at anthropic.com/api; generate API key; enable billing
-- **Pricing Tier:** Pay-per-token; Opus 4.6 ~$15/M input, ~$75/M output. Estimated 500 extractions/week ≈ $25–50/week
+- **Pricing Tier:** Pay-per-token; Opus 4.6 ~$15/M input, ~$75/M output. At weekly cadence (~50–100 extractions/week) ≈ $10–40/month. Scales linearly with ingestion frequency.
 
 ### Supabase
-- **Purpose:** PostgreSQL database, Auth, RLS, Edge Functions for async workers
+- **Purpose:** PostgreSQL database, Auth, RLS, Edge Functions for async workers (extraction pipeline, alert delivery)
 - **Required Credentials:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Account Setup:** Create project at supabase.com; select region eu-central-1; run migrations
-- **Pricing Tier:** Free tier (500MB, 50k monthly active users) sufficient for MVP; Pro ($25/mo) for production
+- **Pricing Tier:** Free tier ($0) — 500MB DB, 50k MAU, 500k Edge Function invocations/month; sufficient for weekly cadence MVP. Note: free projects pause after 7 days without traffic — the weekly GitHub Actions cron prevents this.
+- **Scale trigger:** Upgrade to Pro ($25/mo) when DB exceeds 400MB or Edge Function invocations exceed 400k/month.
 
 ### Vercel
-- **Purpose:** Next.js hosting, Vercel Cron Jobs, Edge Middleware (rate limiting)
+- **Purpose:** Next.js hosting, Edge Middleware (rate limiting)
 - **Required Credentials:** `VERCEL_TOKEN` (for CI/CD deploy)
-- **Account Setup:** Create project; connect GitHub repo; configure environment variables
-- **Pricing Tier:** Hobby (free) for dev; Pro ($20/mo) required for Vercel Cron and custom domains
+- **Account Setup:** Create project; connect GitHub repo `https://github.com/aisebastianraguseo-web/ai-radar.git`; configure environment variables
+- **Pricing Tier:** Hobby ($0) sufficient — no Vercel Cron needed (scheduling via GitHub Actions)
+- **Production repo:** `https://github.com/aisebastianraguseo-web/ai-radar.git`
 
 ### Resend
 - **Purpose:** Transactional email delivery (alerts, digest, weekly briefing, password reset)
@@ -934,6 +938,12 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - **Required Credentials:** none required for v1 (public Atom feed)
 - **Pricing Tier:** Free
 
+### GitHub Actions (Cron Scheduler)
+- **Purpose:** Weekly ingestion trigger (`0 6 * * 1`) and weekly briefing trigger (`30 7 * * 1`) via authenticated HTTP calls to Next.js admin endpoints; replaces Vercel Cron
+- **Required Credentials:** `CRON_SECRET` (shared secret — set as GitHub Actions Secret AND Vercel env var)
+- **Account Setup:** Repository at `https://github.com/aisebastianraguseo-web/ai-radar.git`; add `CRON_SECRET` in repo Settings → Secrets → Actions
+- **Pricing Tier:** Free (< 2 min/week far below 500 min/month free tier for private repos)
+
 ### Slack Incoming Webhooks
 - **Purpose:** Deliver threshold alerts to Slack channels
 - **Required Credentials:** `SLACK_WEBHOOK_URL` (per user, stored in `profiles.preferences`)
@@ -946,8 +956,8 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 
 | # | Question | Severity | Blocks Build? |
 |---|----------|----------|--------------|
-| OQ-1 | The intake specifies `id: ai-capability-radar` internally but the file is `ai-radar.yaml`. Which ID should the product directory and git repo use? | LOW | No — assumption: `ai-radar` (filename wins) |
-| OQ-2 | Vercel Cron Jobs on Pro plan are limited to 1-minute minimum interval. For sub-5-minute alert delivery, should we use Supabase Edge Functions triggered by `pg_notify` instead? | MED | No — can use Supabase Realtime triggers for alerts in v1 |
+| OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~ | RESOLVED | ID = `ai-radar`; production repo = `https://github.com/aisebastianraguseo-web/ai-radar.git` |
+| OQ-2 | ~~Vercel Cron vs alternative for scheduled jobs~~ | RESOLVED | GitHub Actions Cron (free); Vercel Hobby plan used; Supabase Edge Functions for alert delivery |
 | OQ-3 | The intake does not specify a pricing or billing model. Should user registration be open (anyone can sign up) or invite-only for v1? | MED | No — assumption: invite-only (admin creates users) for v1 |
 | OQ-4 | The heatmap (problem class × capability category) requires an "addressability score" aggregation — which formula? Intake does not specify. | MED | No — assumption: mean `delta_magnitude` of all mapped deltas in that cell, last 30 days |
 | OQ-5 | For the daily digest, should users receive a digest even if there are no new events ≥ threshold? | LOW | No — assumption: skip digest if no events above threshold |
