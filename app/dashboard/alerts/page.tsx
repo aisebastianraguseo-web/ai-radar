@@ -48,7 +48,9 @@ export default function AlertsPage(): React.JSX.Element {
     fetch('/api/alerts/unread-count')
       .then((r) => r.json())
       .then((data: { count?: number }) => setUnreadCount(data.count ?? 0))
-      .catch(() => {/* ignore */})
+      .catch(() => {
+        /* ignore */
+      })
   }, [fetchAlerts])
 
   function markAllRead(): void {
@@ -61,28 +63,32 @@ export default function AlertsPage(): React.JSX.Element {
       body: JSON.stringify({ alert_ids: unreadIds }),
     })
       .then(() => {
-        setAlerts((prev) => prev.map((a) => ({ ...a, read_at: a.read_at ?? new Date().toISOString() })))
+        setAlerts((prev) =>
+          prev.map((a) => ({ ...a, read_at: a.read_at ?? new Date().toISOString() }))
+        )
         setUnreadCount(0)
       })
-      .catch(() => {/* ignore */})
+      .catch(() => {
+        /* ignore */
+      })
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-foreground text-2xl font-bold tracking-tight">
             Alerts
             {unreadCount > 0 && (
-              <span className="ml-2 rounded-full bg-destructive px-2 py-0.5 text-xs font-medium text-destructive-foreground">
+              <span className="bg-destructive text-destructive-foreground ml-2 rounded-full px-2 py-0.5 text-xs font-medium">
                 {unreadCount}
               </span>
             )}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">Deine Disruption-Benachrichtigungen</p>
+          <p className="text-muted-foreground mt-1 text-sm">Deine Disruption-Benachrichtigungen</p>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          <label className="text-muted-foreground flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={showUnreadOnly}
@@ -94,7 +100,7 @@ export default function AlertsPage(): React.JSX.Element {
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+              className="text-primary text-sm font-medium underline-offset-4 hover:underline"
             >
               Alle als gelesen markieren
             </button>
@@ -103,35 +109,35 @@ export default function AlertsPage(): React.JSX.Element {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Lade…</p>
+        <p className="text-muted-foreground text-sm">Lade…</p>
       ) : alerts.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Keine Alerts.</p>
+        <p className="text-muted-foreground text-sm">Keine Alerts.</p>
       ) : (
         <ul className="space-y-2">
           {alerts.map((alert) => (
             <li
               key={alert.id}
-              className={`rounded-lg border bg-card p-4 ${
+              className={`bg-card rounded-lg border p-4 ${
                 alert.read_at ? 'border-border opacity-70' : 'border-primary/40'
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    <span className="bg-muted text-muted-foreground rounded px-2 py-0.5 text-xs">
                       {TYPE_LABELS[alert.alert_type] ?? alert.alert_type}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       via {CHANNEL_LABELS[alert.channel] ?? alert.channel}
                     </span>
                     {!alert.read_at && (
-                      <span className="h-2 w-2 rounded-full bg-primary" aria-label="Ungelesen" />
+                      <span className="bg-primary h-2 w-2 rounded-full" aria-label="Ungelesen" />
                     )}
                   </div>
                   {alert.disruption_score_id && (
                     <a
                       href={`/dashboard/disruptions/${alert.disruption_score_id}`}
-                      className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                      className="text-primary text-sm font-medium underline-offset-4 hover:underline"
                     >
                       Disruption ansehen →
                     </a>
@@ -139,13 +145,13 @@ export default function AlertsPage(): React.JSX.Element {
                   {alert.briefing_id && (
                     <a
                       href={`/dashboard/briefings/${alert.briefing_id}`}
-                      className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                      className="text-primary text-sm font-medium underline-offset-4 hover:underline"
                     >
                       Briefing ansehen →
                     </a>
                   )}
                 </div>
-                <p className="shrink-0 text-xs text-muted-foreground">
+                <p className="text-muted-foreground shrink-0 text-xs">
                   {format(new Date(alert.sent_timestamp), 'dd.MM.yyyy HH:mm')}
                 </p>
               </div>

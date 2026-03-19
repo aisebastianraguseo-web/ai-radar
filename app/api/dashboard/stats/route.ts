@@ -5,10 +5,18 @@ import logger from '@/lib/logger'
 import type { CapabilityCategory } from '@/types/database'
 
 const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
-  'context_processing', 'reasoning_depth', 'multi_step_autonomy',
-  'tool_use', 'multimodality', 'deployment_flexibility',
-  'cost_efficiency', 'autonomy_level', 'persistence',
-  'self_improvement', 'integration_depth', 'governance_security',
+  'context_processing',
+  'reasoning_depth',
+  'multi_step_autonomy',
+  'tool_use',
+  'multimodality',
+  'deployment_flexibility',
+  'cost_efficiency',
+  'autonomy_level',
+  'persistence',
+  'self_improvement',
+  'integration_depth',
+  'governance_security',
 ]
 
 export async function GET(_request: NextRequest): Promise<Response> {
@@ -25,12 +33,14 @@ export async function GET(_request: NextRequest): Promise<Response> {
   // Top disruptors this week
   const { data: topDisruptors, error: topErr } = await supabase
     .from('disruption_scores')
-    .select(`
+    .select(
+      `
       id, total_disruption_score, alert_triggered, calculated_date,
       capability_deltas (
         capability_category, capability_name, vendors_affected, detected_date
       )
-    `)
+    `
+    )
     .gte('calculated_date', weekAgo)
     .order('total_disruption_score', { ascending: false })
     .limit(10)

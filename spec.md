@@ -32,18 +32,21 @@ Enterprises are bombarded with daily AI announcements but lack a structured way 
 ## 2. User Personas
 
 ### Persona: Enterprise AI/Strategy Lead
+
 - **Role:** CTO or VP Innovation responsible for AI opportunity identification
 - **Goals:** Spot genuine capability advances that create competitive advantage; build evidence-based roadmaps
 - **Pain Points:** Manually curating dozens of newsletters; no structured signal vs. noise separation; delayed awareness
 - **Technical Level:** medium — comfortable with dashboards, not with raw data pipelines
 
 ### Persona: Product Manager (AI/Automation)
+
 - **Role:** PM responsible for AI-powered feature roadmaps
 - **Goals:** Justify new features with concrete capability evidence; track specific vendors and problem classes
 - **Pain Points:** No single source of truth for "what LLMs can do now vs. 6 months ago"; ad-hoc research is slow
 - **Technical Level:** medium
 
 ### Persona: Business Process Automation Manager
+
 - **Role:** Manages process automation programs, evaluates AI tools
 - **Goals:** Know when a specific class of problem (e.g., invoice extraction) becomes newly solvable
 - **Pain Points:** Capability changes are not mapped to process opportunities; no notification system
@@ -58,15 +61,18 @@ Enterprises are bombarded with daily AI announcements but lack a structured way 
 **Priority:** P1
 
 ### Description
+
 Email/password registration and sign-in via Supabase Auth. Includes profile creation with organisation, role, and notification preferences. Also covers sign-out, password reset, and user preference management.
 
 ### User Stories
+
 - As a new user, I want to create an account with my work email and password so that I can access the platform.
 - As an existing user, I want to sign in and be taken to the dashboard so that I can check the latest capability updates.
 - As a user, I want to reset my forgotten password via email so that I can regain access.
 - As a user, I want to configure my alert preferences (channels, threshold, vendor filters) so that I receive relevant notifications.
 
 ### Acceptance Criteria
+
 - [ ] AC-auth-1: Any visitor can register with email + password at `/register`; receives a verification email; cannot access dashboard until email is verified. No invite code or admin approval required.
 - [ ] AC-auth-2: User can sign in with correct credentials and is redirected to `/dashboard`.
 - [ ] AC-auth-3: Incorrect credentials show an error message that does not reveal whether the email exists.
@@ -76,9 +82,11 @@ Email/password registration and sign-in via Supabase Auth. Includes profile crea
 - [ ] AC-auth-7: All auth endpoints are rate-limited: max 10 attempts per 15 minutes per IP.
 
 ### Data Requirements
+
 - `profiles` table (extends Supabase auth.users): organisation, role enum, preferences JSON.
 
 ### API Surface
+
 - `POST /api/auth/update-profile` — Update profile fields
   - Request: `{ organisation: string, role: string, preferences: PreferencesSchema }`
   - Response: `{ success: boolean }`
@@ -94,6 +102,7 @@ Email/password registration and sign-in via Supabase Auth. Includes profile crea
 **Priority:** P1
 
 ### Description
+
 Automated background pipeline that ingests content from two layers: (1) official vendor channels via RSS/Atom feeds and public APIs, (2) weak signals from GitHub Trending, ArXiv, Hacker News, and Product Hunt. Triggered by a GitHub Actions scheduled workflow (weekly). Deduplicates sources by URL hash and stores raw content in `ingested_sources`.
 
 **Stack Mapping (Assumption):** The intake specifies Python ETL and AWS infrastructure. Per governance/stack.md, the canonical stack is Next.js + Supabase + Vercel. The ingestion pipeline is implemented as Next.js API route handlers triggered via authenticated `POST /api/admin/ingest/trigger` call from a GitHub Actions Cron workflow. Heavy async work (LLM extraction) is queued via Supabase `pg_notify` + Supabase Edge Function workers.
@@ -101,10 +110,12 @@ Automated background pipeline that ingests content from two layers: (1) official
 > ASSUMPTION: Python ETL replaced by TypeScript API routes + GitHub Actions Cron (free). Vercel Hobby plan used (no Vercel Cron needed). Sufficient for weekly cadence; higher frequency is a v2 concern — increase GitHub Actions schedule interval.
 
 ### User Stories
+
 - As an admin, I want the system to automatically ingest AI news from official vendor channels daily so that capability data stays current.
 - As an admin, I want the ingestion log to show which sources were processed, skipped (duplicate), or errored so that I can monitor pipeline health.
 
 ### Acceptance Criteria
+
 - [ ] AC-ingest-1: GitHub Actions Cron (`.github/workflows/weekly-ingest.yml`, schedule `0 6 * * 1`) triggers ingestion every Monday at 06:00 UTC by calling `POST /api/admin/ingest/trigger` with `Authorization: Bearer $CRON_SECRET`. The API route validates the secret server-side before executing.
 - [ ] AC-ingest-2: At least the following RSS/API sources are ingested: OpenAI blog, Anthropic blog, Google DeepMind blog, GitHub Trending (AI orgs), ArXiv (cs.AI + cs.CL), Hacker News (top 50), Product Hunt (AI tag).
 - [ ] AC-ingest-3: Duplicate detection: if `source_url` already exists in `ingested_sources` within the last 7 days, the item is skipped and logged as `duplicate`.
@@ -114,10 +125,12 @@ Automated background pipeline that ingests content from two layers: (1) official
 - [ ] AC-ingest-7: Manual trigger available via `POST /api/admin/ingest/trigger` (admin-only).
 
 ### Data Requirements
+
 - `ingested_sources` table with ingestion status tracking.
 - `ingestion_runs` table for run-level audit log.
 
 ### API Surface
+
 - `POST /api/admin/ingest/trigger` — Manually trigger ingestion run
   - Request: `{ source_types?: string[] }`
   - Response: `{ run_id: string, status: "started" }`
@@ -135,13 +148,16 @@ Automated background pipeline that ingests content from two layers: (1) official
 **Priority:** P1
 
 ### Description
+
 LLM-powered analysis that processes ingested source items and produces structured `capability_deltas`. For each unprocessed `ingested_source`, calls the Anthropic Claude API with a structured prompt to identify capability category, delta magnitude, affected vendors, and evidence snippets. Triggered automatically after ingestion completes via Supabase Edge Function (DB trigger on `ingested_sources` insert), or manually via admin endpoint.
 
 ### User Stories
+
 - As a platform analyst, I want each ingested item automatically analysed by an LLM so that capability shifts are identified without manual review.
 - As a platform analyst, I want extracted deltas to include a confidence score so that I can filter low-quality extractions.
 
 ### Acceptance Criteria
+
 - [ ] AC-delta-1: Every `ingested_source` with `ingestion_status = 'ready'` is processed within 10 minutes of ingestion.
 - [ ] AC-delta-2: Each extraction produces at least one `capability_delta` record with: `capability_category`, `capability_name`, `delta_magnitude` (0–2), `confidence_score` (0–1), `vendors_affected[]`, `evidence_snippets[]`.
 - [ ] AC-delta-3: Extraction uses `claude-opus-4-6` as primary model; falls back to `claude-sonnet-4-6` on API error.
@@ -151,10 +167,12 @@ LLM-powered analysis that processes ingested source items and produces structure
 - [ ] AC-delta-7: Anthropic API key is loaded from `ANTHROPIC_API_KEY` env var; never hardcoded.
 
 ### Data Requirements
+
 - `capability_deltas` table.
 - `ingested_sources.extraction_status` column updated on completion.
 
 ### API Surface
+
 - `POST /api/admin/extraction/trigger` — Trigger extraction for pending sources
   - Request: `{ limit?: number }` (default 50)
   - Response: `{ queued: number }`
@@ -168,15 +186,18 @@ LLM-powered analysis that processes ingested source items and produces structure
 **Priority:** P1
 
 ### Description
+
 Versioned knowledge base of all capability categories, their current score (0–10), and historical delta timeline per vendor. Serves as the canonical capability map powering charts, comparisons, and trend analysis. A `capability_landscape_versions` snapshot is saved daily.
 
 > ASSUMPTION: Vector DB (Pinecone/Weaviate) is deferred to v2. Semantic search in v1 is handled by PostgreSQL full-text search (`tsvector`) via Supabase, which avoids an additional external dependency. pgvector extension enabled for future compatibility.
 
 ### User Stories
+
 - As a product manager, I want to see the current level of "Multi-step Autonomy" per vendor so that I can compare Anthropic vs OpenAI.
 - As a strategy lead, I want to query "how has Context Processing evolved over the last 6 months?" so that I can report on trend direction.
 
 ### Acceptance Criteria
+
 - [ ] AC-landscape-1: All 12 capability categories from the intake are seeded with initial data.
 - [ ] AC-landscape-2: `GET /api/capabilities` returns the current level per capability per vendor, sortable by category.
 - [ ] AC-landscape-3: `GET /api/capabilities/[id]/history` returns the delta timeline for a specific capability (date, delta_magnitude, vendor).
@@ -185,11 +206,13 @@ Versioned knowledge base of all capability categories, their current score (0–
 - [ ] AC-landscape-6: `GET /api/capabilities/compare?vendors=A,B&category=reasoning` returns side-by-side capability levels.
 
 ### Data Requirements
+
 - `capabilities` lookup table (seeded with 12 categories × vendors).
 - `capability_deltas` (linked).
 - `capability_landscape_versions` snapshot table.
 
 ### API Surface
+
 - `GET /api/capabilities` — List all capabilities with current levels
   - Query: `?category=&vendor=&search=`
   - Response: `{ capabilities: Capability[] }`
@@ -216,13 +239,16 @@ Versioned knowledge base of all capability categories, their current score (0–
 **Priority:** P1
 
 ### Description
+
 LLM-driven service that maps each high-magnitude capability delta to one or more of nine predefined business problem classes, generating a structured impact statement: "Problem [X] can now be better solved because [capability Y] improved by Δ [Z], enabling [process A] to be automated." Runs as part of the post-extraction pipeline.
 
 ### User Stories
+
 - As an automation manager, I want each capability delta automatically mapped to a business problem class so that I know which processes are now addressable without manual research.
 - As a PM, I want impact statements in plain language so that I can share them directly with stakeholders.
 
 ### Acceptance Criteria
+
 - [ ] AC-impact-1: Every `capability_delta` with `delta_magnitude ≥ 1` is processed by the business impact mapper within 10 minutes of extraction.
 - [ ] AC-impact-2: Each mapping produces a `business_problem_mapping` record with: `problem_class` (enum, 9 values), `impact_statement` (text), `addressable_process_name`, `readiness_level` (enum: experimental | early-adopter | production-ready).
 - [ ] AC-impact-3: The LLM prompt uses the 9-class problem matrix from the intake verbatim as few-shot context.
@@ -231,10 +257,12 @@ LLM-driven service that maps each high-magnitude capability delta to one or more
 - [ ] AC-impact-6: `mapper_version` is recorded on every `business_problem_mapping` for auditability.
 
 ### Data Requirements
+
 - `business_problem_mappings` table.
 - `capability_deltas.mapping_status` updated on completion.
 
 ### API Surface
+
 - `GET /api/impact-mappings` — List recent mappings
   - Query: `?problem_class=&readiness_level=&from=&limit=`
   - Response: `{ mappings: BusinessProblemMapping[] }`
@@ -251,13 +279,16 @@ LLM-driven service that maps each high-magnitude capability delta to one or more
 **Priority:** P1
 
 ### Description
+
 Quantitative scoring model that calculates a `disruption_score` for each capability delta using the weighted scorecard from the intake (8 dimensions). Scores ≥ 6 trigger the alerting system. A ranked leaderboard of top disruptors is the primary dashboard view.
 
 ### User Stories
+
 - As a strategy lead, I want each capability shift assigned a disruption score so that I can immediately know what's genuinely important.
 - As an analyst, I want to see which dimension drove a high score so that I can validate the reasoning.
 
 ### Acceptance Criteria
+
 - [ ] AC-score-1: Every `capability_delta` receives a `disruption_score` within 1 minute of business impact mapping completing.
 - [ ] AC-score-2: The scorecard calculates 8 sub-scores: vendor_leadership (0–2), novelty (0–2), distribution_potential (0–2), open_source (0–1), cost_reduction (0–2), momentum (0–2), hype_adjustment (0–1, subtracted), multi_signal_bonus (0–1, added).
 - [ ] AC-score-3: `total_disruption_score` = sum of sub-scores; stored as numeric(5,2).
@@ -266,10 +297,12 @@ Quantitative scoring model that calculates a `disruption_score` for each capabil
 - [ ] AC-score-6: Score history is immutable; re-scoring creates a new record (never updates).
 
 ### Data Requirements
+
 - `disruption_scores` table.
 - `capability_deltas.score_id` FK after scoring.
 
 ### API Surface
+
 - `GET /api/disruptions` — Ranked disruption list
   - Query: `?sort=score|date&limit=&vendor=&category=&from=&to=`
   - Response: `{ disruptions: DisruptionWithDelta[] }`
@@ -286,14 +319,17 @@ Quantitative scoring model that calculates a `disruption_score` for each capabil
 **Priority:** P1
 
 ### Description
+
 Web dashboard showing: (1) top disruptors this week (ranked table), (2) capability trend charts (time-series per category), (3) business problem heatmap (problem class × capability category, colour = addressability), (4) alert feed, (5) full-text search. Built with Next.js 15 App Router, Recharts for charts, shadcn/ui for UI components.
 
 ### User Stories
+
 - As a strategy lead, I want to open the dashboard and immediately see the top 5 disruptions this week so that I can decide where to focus.
 - As a PM, I want to filter the disruption list by vendor and problem class so that I see only what's relevant to my roadmap.
 - As any user, I want to search for a specific capability or problem class by name so that I can find relevant signals quickly.
 
 ### Acceptance Criteria
+
 - [ ] AC-dash-1: Dashboard home (`/dashboard`) shows top 10 disruptors (this week), capability trend sparklines for each of 12 categories, and the latest briefing summary.
 - [ ] AC-dash-2: Disruption table supports column-sort by score, date, vendor. Supports filter by vendor (multi-select), problem class (multi-select), capability category (multi-select), date range.
 - [ ] AC-dash-3: Capability trend page (`/dashboard/capabilities`) shows time-series line chart for selected capability × vendor over selectable time window (7d, 30d, 90d, 1y).
@@ -304,9 +340,11 @@ Web dashboard showing: (1) top disruptors this week (ranked table), (2) capabili
 - [ ] AC-dash-8: Dashboard LCP < 2.5s measured on Vercel Edge (simulated 4G).
 
 ### Data Requirements
+
 - Reads from `disruption_scores`, `capability_deltas`, `business_problem_mappings`, `ingested_sources`, `weekly_briefings`.
 
 ### API Surface
+
 - `GET /api/dashboard/stats` — Aggregated home stats
   - Response: `{ top_disruptors: DisruptionRow[], trend_sparklines: TrendData[], latest_briefing: BriefingSummary }`
   - Auth: required
@@ -323,16 +361,19 @@ Web dashboard showing: (1) top disruptors this week (ranked table), (2) capabili
 **Priority:** P1
 
 ### Description
+
 Configurable alerts triggered by disruption score threshold (≥ 6 = immediate), daily digest (score ≥ 3), and weekly briefing. Channels: email (via Resend), Slack webhook, in-app notification. Users configure channel preferences in their profile.
 
 > ASSUMPTION: AWS SNS/SQS from intake replaced by Resend (transactional email) and Slack Incoming Webhooks. This avoids AWS dependency and is sufficient for v1 scale. Supabase Edge Functions handle async delivery.
 
 ### User Stories
+
 - As a strategy lead, I want to receive an immediate Slack message when a disruption score ≥ 6 event occurs so that I can react within the hour.
 - As a PM, I want a daily email digest of all score ≥ 3 events so that I stay informed without real-time interruptions.
 - As any user, I want to see unread alert counts in the dashboard header so that I don't miss in-app notifications.
 
 ### Acceptance Criteria
+
 - [ ] AC-alert-1: When `disruption_scores.alert_triggered = true`, an alert is enqueued and delivered within 5 minutes.
 - [ ] AC-alert-2: Alert delivery supports three channels: email (Resend), Slack webhook, in-app. User preferences determine active channels.
 - [ ] AC-alert-3: Slack alert includes: capability name, disruption score, top impact statement, link to dashboard detail page.
@@ -344,10 +385,12 @@ Configurable alerts triggered by disruption score threshold (≥ 6 = immediate),
 - [ ] AC-alert-9: Users can mute specific vendors or problem classes from triggering alerts (stored in preferences).
 
 ### Data Requirements
+
 - `alert_logs` table.
 - `profiles.preferences` JSON (channels, muted_vendors, muted_problem_classes, digest_threshold).
 
 ### API Surface
+
 - `GET /api/alerts` — List user's alert history
   - Query: `?limit=&unread=true`
   - Response: `{ alerts: AlertLog[] }`
@@ -369,13 +412,16 @@ Configurable alerts triggered by disruption score threshold (≥ 6 = immediate),
 **Priority:** P1
 
 ### Description
+
 Automated weekly report synthesised by LLM from the week's findings. Covers: executive summary, top disruptors table, capability trends, problem-opportunity matrix, and recommended actions. Delivered as email (HTML) and persisted in the dashboard. Generated every Monday at 07:30 UTC, triggered by a dedicated GitHub Actions workflow (`.github/workflows/weekly-briefing.yml`).
 
 ### User Stories
+
 - As a strategy lead, I want to receive a structured weekly briefing every Monday morning so that I start the week with strategic AI intelligence.
 - As any user, I want to view past briefings in the dashboard so that I can reference historical analysis.
 
 ### Acceptance Criteria
+
 - [ ] AC-brief-1: GitHub Actions Cron (`.github/workflows/weekly-briefing.yml`, schedule `30 7 * * 1`) triggers briefing generation every Monday at 07:30 UTC by calling `POST /api/admin/briefings/generate` with `Authorization: Bearer $CRON_SECRET`.
 - [ ] AC-brief-2: Briefing covers exactly the preceding 7 days (Mon 00:00 UTC → Sun 23:59 UTC).
 - [ ] AC-brief-3: Briefing contains: executive summary (1–2 sentences), top-10 disruptors table (name, score, impact), capability trends section (which categories improved/stagnated), problem-opportunity matrix (which problem classes gained new addressability), 3–5 recommended actions.
@@ -386,9 +432,11 @@ Automated weekly report synthesised by LLM from the week's findings. Covers: exe
 - [ ] AC-brief-8: If generation fails (LLM error), an admin alert is sent; the briefing is marked `failed` (not silently skipped).
 
 ### Data Requirements
+
 - `weekly_briefings` table.
 
 ### API Surface
+
 - `GET /api/briefings` — List briefings
   - Query: `?limit=12`
   - Response: `{ briefings: BriefingSummary[] }`
@@ -789,28 +837,28 @@ Summary:
 
 ## 5. API Surface
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/auth/update-profile` | required | Update profile fields |
-| GET | `/api/capabilities` | required | List capability landscape |
-| GET | `/api/capabilities/[id]` | required | Capability detail + recent deltas |
-| GET | `/api/capabilities/[id]/history` | required | Delta timeline |
-| GET | `/api/capabilities/compare` | required | Side-by-side vendor comparison |
-| GET | `/api/disruptions` | required | Ranked disruption list |
-| GET | `/api/disruptions/[id]` | required | Disruption detail |
-| GET | `/api/impact-mappings` | required | Business problem mappings |
-| GET | `/api/impact-mappings/[id]` | required | Single mapping detail |
-| GET | `/api/dashboard/stats` | required | Aggregated home stats |
-| GET | `/api/search` | required | Full-text search |
-| GET | `/api/alerts` | required | User's alert history |
-| POST | `/api/alerts/mark-read` | required | Mark alerts as read |
-| GET | `/api/alerts/unread-count` | required | Unread badge count |
-| GET | `/api/briefings` | required | List past briefings |
-| GET | `/api/briefings/[id]` | required | Full briefing content |
-| POST | `/api/admin/ingest/trigger` | required, admin | Manual ingestion trigger |
-| GET | `/api/admin/ingest/runs` | required, admin | Ingestion run history |
-| POST | `/api/admin/extraction/trigger` | required, admin | Manual extraction trigger |
-| POST | `/api/admin/briefings/generate` | required, admin | Manual briefing trigger |
+| Method | Path                             | Auth            | Description                       |
+| ------ | -------------------------------- | --------------- | --------------------------------- |
+| POST   | `/api/auth/update-profile`       | required        | Update profile fields             |
+| GET    | `/api/capabilities`              | required        | List capability landscape         |
+| GET    | `/api/capabilities/[id]`         | required        | Capability detail + recent deltas |
+| GET    | `/api/capabilities/[id]/history` | required        | Delta timeline                    |
+| GET    | `/api/capabilities/compare`      | required        | Side-by-side vendor comparison    |
+| GET    | `/api/disruptions`               | required        | Ranked disruption list            |
+| GET    | `/api/disruptions/[id]`          | required        | Disruption detail                 |
+| GET    | `/api/impact-mappings`           | required        | Business problem mappings         |
+| GET    | `/api/impact-mappings/[id]`      | required        | Single mapping detail             |
+| GET    | `/api/dashboard/stats`           | required        | Aggregated home stats             |
+| GET    | `/api/search`                    | required        | Full-text search                  |
+| GET    | `/api/alerts`                    | required        | User's alert history              |
+| POST   | `/api/alerts/mark-read`          | required        | Mark alerts as read               |
+| GET    | `/api/alerts/unread-count`       | required        | Unread badge count                |
+| GET    | `/api/briefings`                 | required        | List past briefings               |
+| GET    | `/api/briefings/[id]`            | required        | Full briefing content             |
+| POST   | `/api/admin/ingest/trigger`      | required, admin | Manual ingestion trigger          |
+| GET    | `/api/admin/ingest/runs`         | required, admin | Ingestion run history             |
+| POST   | `/api/admin/extraction/trigger`  | required, admin | Manual extraction trigger         |
+| POST   | `/api/admin/briefings/generate`  | required, admin | Manual briefing trigger           |
 
 All endpoints return `Content-Type: application/json`. All error responses follow `{ error: string, code: string }`.
 
@@ -819,6 +867,7 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 ## 6. Non-Functional Requirements
 
 ### 6.1 Performance
+
 - Target concurrent users: 100
 - Page load target: LCP < 2.5s on simulated 4G
 - Database query target: < 200ms for 95th percentile (disruption leaderboard, capability list)
@@ -826,6 +875,7 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - Weekly briefing generation: < 30 minutes (LLM call is the bottleneck)
 
 ### 6.2 Security
+
 - **Auth:** Supabase Auth (email/password + magic link for password reset). JWT tokens stored in secure HTTP-only cookies via `@supabase/ssr`.
 - **Session management:** Sessions expire after 7 days of inactivity. `Strict-Transport-Security` enforced.
 - **RLS:** All tables RLS-enabled with default-deny. Service role key only used server-side.
@@ -844,6 +894,7 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - **Error responses:** Client receives generic messages; full errors logged server-side.
 
 ### 6.3 Accessibility
+
 - WCAG 2.1 Level AA
 - Dashboard charts use colour + pattern/label (not colour alone) to convey data
 - Heatmap includes aria-labels per cell
@@ -851,11 +902,13 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - Skip-to-main link on every page
 
 ### 6.4 Browser / Platform Support
+
 - Chrome ≥ 120, Firefox ≥ 120, Safari ≥ 17, Edge ≥ 120
 - Mobile responsive (min-width 320px, touch targets ≥ 44px)
 - Dark mode: default on (design: slate/gray palette)
 
 ### 6.5 Data Privacy
+
 - EU data residency (Supabase `eu-central-1`, Vercel EU region)
 - GDPR-applicable: user email and preferences stored; DPA required with Supabase, Vercel, Resend
 - PII collected: email, organisation name (optional). Not included in LLM prompts.
@@ -865,38 +918,40 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 
 ## 7. Out of Scope
 
-| Item | Deferred To |
-|------|-------------|
-| Mobile native app | v2 |
-| Google / GitHub OAuth | v2 |
-| Multi-tenant team management (shared workspace) | v2 |
-| Custom alert rules (user-defined trigger formulas) | v2 |
-| CRM/ERP integrations (Salesforce, Jira) | v2 |
-| Predictive ML (early-warning forecasting) | v2 |
-| White-label / private-label deployment | v2 |
-| Microsoft Teams integration | v2 |
-| Self-hosted / on-prem deployment | v2 |
-| Real-time streaming dashboard (WebSocket) | v2 (polling sufficient for v1) |
-| Chinese AI ecosystem dedicated feed (DeepSeek, Qwen) | v2 |
-| Vector DB / semantic search (Pinecone / Weaviate) | v2 (pgvector prepared, not activated) |
-| Python ETL pipeline (AWS Glue / Airflow) | v2 (GitHub Actions Cron + Next.js API routes sufficient for weekly cadence) |
-| Increased ingestion frequency (daily/hourly) | v2 (change GitHub Actions schedule; consider dedicated worker for >daily) |
-| CSV / PDF export | v2 |
-| API for third-party integrations | v2 |
-| Pricing / billing / subscription management | v2 |
-| SSO / OIDC (OKTA, Azure AD) | v2 |
+| Item                                                 | Deferred To                                                                 |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| Mobile native app                                    | v2                                                                          |
+| Google / GitHub OAuth                                | v2                                                                          |
+| Multi-tenant team management (shared workspace)      | v2                                                                          |
+| Custom alert rules (user-defined trigger formulas)   | v2                                                                          |
+| CRM/ERP integrations (Salesforce, Jira)              | v2                                                                          |
+| Predictive ML (early-warning forecasting)            | v2                                                                          |
+| White-label / private-label deployment               | v2                                                                          |
+| Microsoft Teams integration                          | v2                                                                          |
+| Self-hosted / on-prem deployment                     | v2                                                                          |
+| Real-time streaming dashboard (WebSocket)            | v2 (polling sufficient for v1)                                              |
+| Chinese AI ecosystem dedicated feed (DeepSeek, Qwen) | v2                                                                          |
+| Vector DB / semantic search (Pinecone / Weaviate)    | v2 (pgvector prepared, not activated)                                       |
+| Python ETL pipeline (AWS Glue / Airflow)             | v2 (GitHub Actions Cron + Next.js API routes sufficient for weekly cadence) |
+| Increased ingestion frequency (daily/hourly)         | v2 (change GitHub Actions schedule; consider dedicated worker for >daily)   |
+| CSV / PDF export                                     | v2                                                                          |
+| API for third-party integrations                     | v2                                                                          |
+| Pricing / billing / subscription management          | v2                                                                          |
+| SSO / OIDC (OKTA, Azure AD)                          | v2                                                                          |
 
 ---
 
 ## 8. External Dependencies
 
 ### Anthropic Claude API
+
 - **Purpose:** LLM-powered capability delta extraction, business impact mapping, weekly briefing synthesis
 - **Required Credentials:** `ANTHROPIC_API_KEY`
 - **Account Setup:** Create account at anthropic.com/api; generate API key; enable billing
 - **Pricing Tier:** Pay-per-token; Opus 4.6 ~$15/M input, ~$75/M output. At weekly cadence (~50–100 extractions/week) ≈ $10–40/month. Scales linearly with ingestion frequency.
 
 ### Supabase
+
 - **Purpose:** PostgreSQL database, Auth, RLS, Edge Functions for async workers (extraction pipeline, alert delivery)
 - **Required Credentials:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Account Setup:** Create project at supabase.com; select region eu-central-1; run migrations
@@ -904,6 +959,7 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - **Scale trigger:** Upgrade to Pro ($25/mo) when DB exceeds 400MB or Edge Function invocations exceed 400k/month.
 
 ### Vercel
+
 - **Purpose:** Next.js hosting, Edge Middleware (rate limiting)
 - **Required Credentials:** `VERCEL_TOKEN` (for CI/CD deploy)
 - **Account Setup:** Create project; connect GitHub repo `https://github.com/aisebastianraguseo-web/ai-radar.git`; configure environment variables
@@ -911,40 +967,47 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 - **Production repo:** `https://github.com/aisebastianraguseo-web/ai-radar.git`
 
 ### Resend
+
 - **Purpose:** Transactional email delivery (alerts, digest, weekly briefing, password reset)
 - **Required Credentials:** `RESEND_API_KEY`
 - **Account Setup:** Create account at resend.com; verify sending domain; configure DNS records
 - **Pricing Tier:** Free tier (3000 emails/month); sufficient for MVP
 
 ### GitHub API
+
 - **Purpose:** Ingest GitHub Trending repositories from AI organisations
 - **Required Credentials:** `GITHUB_TOKEN` (personal access token, read:public scope)
 - **Account Setup:** Generate PAT at github.com/settings/tokens
 - **Pricing Tier:** Free (5000 requests/hour with auth)
 
 ### Hacker News API
+
 - **Purpose:** Ingest top tech discussions
 - **Required Credentials:** none (public API)
 - **Pricing Tier:** Free
 
 ### Product Hunt API
+
 - **Purpose:** Ingest newly launched AI products
 - **Required Credentials:** `PRODUCTHUNT_API_TOKEN`
 - **Account Setup:** Create Developer application at producthunt.com/v2/oauth/applications
 - **Pricing Tier:** Free
 
 ### ArXiv API
+
 - **Purpose:** Ingest AI/ML research papers (cs.AI, cs.CL, cs.LG)
 - **Required Credentials:** none required for v1 (public Atom feed)
 - **Pricing Tier:** Free
 
 ### GitHub Actions (Cron Scheduler)
+
 - **Purpose:** Weekly ingestion trigger (`0 6 * * 1`) and weekly briefing trigger (`30 7 * * 1`) via authenticated HTTP calls to Next.js admin endpoints; replaces Vercel Cron
 - **Required Credentials:** `CRON_SECRET` (shared secret — set as GitHub Actions Secret AND Vercel env var)
 - **Account Setup:** Repository at `https://github.com/aisebastianraguseo-web/ai-radar.git`; add `CRON_SECRET` in repo Settings → Secrets → Actions
 - **Pricing Tier:** Free (< 2 min/week far below 500 min/month free tier for private repos)
 
 ### Slack Incoming Webhooks
+
 - **Purpose:** Deliver threshold alerts to Slack channels
 - **Required Credentials:** `SLACK_WEBHOOK_URL` (per user, stored in `profiles.preferences`)
 - **Account Setup:** Users create Incoming Webhook in their Slack workspace settings
@@ -954,11 +1017,11 @@ All endpoints return `Content-Type: application/json`. All error responses follo
 
 ## 9. Open Questions
 
-| # | Question | Severity | Blocks Build? |
-|---|----------|----------|--------------|
-| OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~ | RESOLVED | ID = `ai-radar`; production repo = `https://github.com/aisebastianraguseo-web/ai-radar.git` |
-| OQ-2 | ~~Vercel Cron vs alternative for scheduled jobs~~ | RESOLVED | GitHub Actions Cron (free); Vercel Hobby plan used; Supabase Edge Functions for alert delivery |
-| OQ-3 | ~~User registration: open vs. invite-only for v1~~ | RESOLVED | **Open registration** — anyone with a valid email can sign up; no invite flow needed |
-| OQ-4 | The heatmap (problem class × capability category) requires an "addressability score" aggregation — which formula? Intake does not specify. | MED | No — assumption: mean `delta_magnitude` of all mapped deltas in that cell, last 30 days |
-| OQ-5 | For the daily digest, should users receive a digest even if there are no new events ≥ threshold? | LOW | No — assumption: skip digest if no events above threshold |
-| OQ-6 | Disruption score dimension "momentum" relies on GitHub velocity and ArXiv cluster growth signals. These require time-series comparison. Is a simple "items mentioning this capability in last 24h" count acceptable for v1? | MED | No — assumption: yes, simple mention count for v1 |
+| #    | Question                                                                                                                                                                                                                    | Severity | Blocks Build?                                                                                  |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~                                                                                                                                                                         | RESOLVED | ID = `ai-radar`; production repo = `https://github.com/aisebastianraguseo-web/ai-radar.git`    |
+| OQ-2 | ~~Vercel Cron vs alternative for scheduled jobs~~                                                                                                                                                                           | RESOLVED | GitHub Actions Cron (free); Vercel Hobby plan used; Supabase Edge Functions for alert delivery |
+| OQ-3 | ~~User registration: open vs. invite-only for v1~~                                                                                                                                                                          | RESOLVED | **Open registration** — anyone with a valid email can sign up; no invite flow needed           |
+| OQ-4 | The heatmap (problem class × capability category) requires an "addressability score" aggregation — which formula? Intake does not specify.                                                                                  | MED      | No — assumption: mean `delta_magnitude` of all mapped deltas in that cell, last 30 days        |
+| OQ-5 | For the daily digest, should users receive a digest even if there are no new events ≥ threshold?                                                                                                                            | LOW      | No — assumption: skip digest if no events above threshold                                      |
+| OQ-6 | Disruption score dimension "momentum" relies on GitHub velocity and ArXiv cluster growth signals. These require time-series comparison. Is a simple "items mentioning this capability in last 24h" count acceptable for v1? | MED      | No — assumption: yes, simple mention count for v1                                              |

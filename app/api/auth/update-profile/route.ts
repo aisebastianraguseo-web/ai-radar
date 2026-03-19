@@ -74,10 +74,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json({ success: true })
   }
 
-  const { error: dbError } = await supabase
-    .from('profiles')
-    .update(updatePayload)
-    .eq('id', user.id)
+  const { error: dbError } = await supabase.from('profiles').update(updatePayload).eq('id', user.id)
 
   if (dbError) {
     logger.error({ err: dbError }, 'Failed to update profile')

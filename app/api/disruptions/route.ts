@@ -22,13 +22,15 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   let query = supabase
     .from('disruption_scores')
-    .select(`
+    .select(
+      `
       *,
       capability_deltas (
         id, capability_category, capability_name, vendors_affected,
         detected_date, confidence_score, evidence_snippets
       )
-    `)
+    `
+    )
     .order(sort === 'date' ? 'calculated_date' : 'total_disruption_score', { ascending: false })
     .limit(limit)
 

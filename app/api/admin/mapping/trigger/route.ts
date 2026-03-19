@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { validateCronSecret, isAdmin } from '@/lib/auth/guards'
-import { runIngestionPipeline } from '@/lib/ingestion/pipeline'
+import { runMappingBatch } from '@/lib/impact/mapper'
 import logger from '@/lib/logger'
 
 export async function POST(request: NextRequest): Promise<Response> {
@@ -17,21 +17,20 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
   }
 
-  let body: { source_types?: string[] } = {}
+  let limit = 50
   try {
-    body = (await request.json()) as { source_types?: string[] }
+    const body = (await request.json()) as { limit?: number }
+    if (typeof body.limit === 'number') limit = body.limit
   } catch {
-    // empty body is fine
+    // default limit
   }
 
-  const triggeredBy = isCron ? 'github_actions_cron' : 'admin_manual'
-
   try {
-    const result = await runIngestionPipeline(supabase, triggeredBy, body.source_types)
-    logger.info(result, 'Ingestion pipeline completed')
-    return NextResponse.json({ status: 'completed', ...result }, { status: 200 })
+    const result = await runMappingBatch(supabase, limit)
+    logger.info(result, 'Mapping batch completed')
+    return NextResponse.json(result)
   } catch (err) {
-    logger.error({ err }, 'Ingestion pipeline failed')
-    return NextResponse.json({ error: 'Pipeline failed', code: 'PIPELINE_ERROR' }, { status: 500 })
+    logger.error({ err }, 'Mapping batch failed')
+    return NextResponse.json({ error: 'Mapping failed', code: 'MAPPING_ERROR' }, { status: 500 })
   }
 }

@@ -17,41 +17,41 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="bg-background flex min-h-screen flex-col">
       <header
-        className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm"
+        className="border-border bg-card/80 sticky top-0 z-50 border-b backdrop-blur-sm"
         role="banner"
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <a href="/dashboard" className="flex items-center gap-2 font-semibold text-foreground">
+          <a href="/dashboard" className="text-foreground flex items-center gap-2 font-semibold">
             <span aria-hidden="true">📡</span>
             <span>AI Radar</span>
           </a>
           <nav aria-label="Hauptnavigation" className="hidden gap-4 sm:flex">
-            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground text-sm">
               Übersicht
             </Link>
             <Link
               href="/dashboard/capabilities"
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground text-sm"
             >
               Capabilities
             </Link>
             <Link
               href="/dashboard/heatmap"
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground text-sm"
             >
               Heatmap
             </Link>
             <Link
               href="/dashboard/alerts"
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground text-sm"
             >
               Alerts
             </Link>
             <Link
               href="/dashboard/briefings"
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground text-sm"
             >
               Briefings
             </Link>
@@ -59,7 +59,7 @@ export default async function DashboardLayout({
           <form action="/api/auth/signout" method="post">
             <button
               type="submit"
-              className="text-sm text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="text-muted-foreground hover:text-foreground focus-visible:outline-ring text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Abmelden
             </button>

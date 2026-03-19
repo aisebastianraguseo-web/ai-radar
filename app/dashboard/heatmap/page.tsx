@@ -3,15 +3,30 @@
 import { useState, useEffect } from 'react'
 
 const PROBLEM_CLASSES = [
-  'fragmentation', 'knowledge_loss', 'manual_handoffs', 'repetitivity',
-  'decision_uncertainty', 'long_cycles', 'documentation_burden',
-  'transparency_gap', 'talent_constraints',
+  'fragmentation',
+  'knowledge_loss',
+  'manual_handoffs',
+  'repetitivity',
+  'decision_uncertainty',
+  'long_cycles',
+  'documentation_burden',
+  'transparency_gap',
+  'talent_constraints',
 ]
 
 const CAPABILITY_CATEGORIES = [
-  'context_processing', 'reasoning_depth', 'multi_step_autonomy', 'tool_use',
-  'multimodality', 'deployment_flexibility', 'cost_efficiency', 'autonomy_level',
-  'persistence', 'self_improvement', 'integration_depth', 'governance_security',
+  'context_processing',
+  'reasoning_depth',
+  'multi_step_autonomy',
+  'tool_use',
+  'multimodality',
+  'deployment_flexibility',
+  'cost_efficiency',
+  'autonomy_level',
+  'persistence',
+  'self_improvement',
+  'integration_depth',
+  'governance_security',
 ]
 
 const LABELS: Record<string, string> = {
@@ -62,15 +77,22 @@ export default function HeatmapPage(): React.JSX.Element {
       fetch('/api/impact-mappings?limit=500').then((r) => r.json()),
       fetch('/api/capabilities?limit=500').then((r) => r.json()),
     ])
-      .then(([impactData, capData]: [{ mappings?: MappingRow[] }, { capabilities?: Array<{ id: string; capability_category: string }> }]) => {
-        setMappings(impactData.mappings ?? [])
-        const catMap: Record<string, string> = {}
-        for (const cap of capData.capabilities ?? []) {
-          catMap[cap.id] = cap.capability_category
+      .then(
+        ([impactData, capData]: [
+          { mappings?: MappingRow[] },
+          { capabilities?: Array<{ id: string; capability_category: string }> },
+        ]) => {
+          setMappings(impactData.mappings ?? [])
+          const catMap: Record<string, string> = {}
+          for (const cap of capData.capabilities ?? []) {
+            catMap[cap.id] = cap.capability_category
+          }
+          setDeltaCategories(catMap)
         }
-        setDeltaCategories(catMap)
+      )
+      .catch(() => {
+        /* keep empty */
       })
-      .catch(() => { /* keep empty */ })
       .finally(() => setIsLoading(false))
   }, [])
 
@@ -83,25 +105,26 @@ export default function HeatmapPage(): React.JSX.Element {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Business-Heatmap</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Problemklassen (Zeilen) × Capability-Kategorien (Spalten) — Farbintensität = Anzahl Mappings
+        <h1 className="text-foreground text-2xl font-bold tracking-tight">Business-Heatmap</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Problemklassen (Zeilen) × Capability-Kategorien (Spalten) — Farbintensität = Anzahl
+          Mappings
         </p>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Lade…</p>
+        <p className="text-muted-foreground text-sm">Lade…</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="border-collapse text-xs">
             <thead>
               <tr>
-                <th scope="col" className="w-40 p-2 text-left text-muted-foreground" />
+                <th scope="col" className="text-muted-foreground w-40 p-2 text-left" />
                 {CAPABILITY_CATEGORIES.map((cat) => (
                   <th
                     key={cat}
                     scope="col"
-                    className="w-14 p-2 text-center text-muted-foreground"
+                    className="text-muted-foreground w-14 p-2 text-center"
                     title={cat}
                   >
                     <span className="inline-block -rotate-45 whitespace-nowrap">
@@ -114,7 +137,10 @@ export default function HeatmapPage(): React.JSX.Element {
             <tbody>
               {PROBLEM_CLASSES.map((problem) => (
                 <tr key={problem}>
-                  <th scope="row" className="p-2 text-right text-muted-foreground whitespace-nowrap">
+                  <th
+                    scope="row"
+                    className="text-muted-foreground p-2 text-right whitespace-nowrap"
+                  >
                     {LABELS[problem] ?? problem}
                   </th>
                   {CAPABILITY_CATEGORIES.map((cat) => {
@@ -124,7 +150,7 @@ export default function HeatmapPage(): React.JSX.Element {
                         <button
                           onClick={() => setSelected({ problem, category: cat })}
                           aria-label={`${LABELS[problem] ?? problem} × ${LABELS[cat] ?? cat}: ${count} Mappings`}
-                          className={`h-10 w-10 rounded transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring ${intensityClass(count)}`}
+                          className={`focus-visible:outline-ring h-10 w-10 rounded transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 ${intensityClass(count)}`}
                           title={`${count} Mappings`}
                         />
                       </td>
@@ -138,16 +164,17 @@ export default function HeatmapPage(): React.JSX.Element {
       )}
 
       {selected && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="font-medium text-foreground">
-            {LABELS[selected.problem] ?? selected.problem} × {LABELS[selected.category] ?? selected.category}
+        <div className="border-border bg-card rounded-lg border p-4">
+          <p className="text-foreground font-medium">
+            {LABELS[selected.problem] ?? selected.problem} ×{' '}
+            {LABELS[selected.category] ?? selected.category}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             {cellCount(selected.problem, selected.category)} Mappings
           </p>
           <button
             onClick={() => setSelected(null)}
-            className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground mt-2 text-xs"
           >
             Schließen
           </button>

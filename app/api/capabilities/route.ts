@@ -18,7 +18,9 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   let query = supabase
     .from('capability_deltas')
-    .select('capability_category, capability_name, vendors_affected, delta_magnitude, confidence_score, detected_date, id')
+    .select(
+      'capability_category, capability_name, vendors_affected, delta_magnitude, confidence_score, detected_date, id'
+    )
     .order('detected_date', { ascending: false })
 
   if (category) {

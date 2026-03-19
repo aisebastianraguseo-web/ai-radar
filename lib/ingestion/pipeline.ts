@@ -105,5 +105,11 @@ export async function runIngestionPipeline(
     })
     .eq('id', runId)
 
-  return { run_id: runId, sources_total: sourcesTotal, sources_new: sourcesNew, sources_dup: sourcesDup, sources_failed: sourcesFailed }
+  return {
+    run_id: runId,
+    sources_total: sourcesTotal,
+    sources_new: sourcesNew,
+    sources_dup: sourcesDup,
+    sources_failed: sourcesFailed,
+  }
 }

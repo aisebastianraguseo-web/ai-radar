@@ -21,12 +21,17 @@ export async function GET(request: NextRequest): Promise<Response> {
     .filter(Boolean)
 
   if (vendors.length === 0) {
-    return NextResponse.json({ error: 'vendors param required', code: 'BAD_REQUEST' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'vendors param required', code: 'BAD_REQUEST' },
+      { status: 400 }
+    )
   }
 
   let query = supabase
     .from('capability_deltas')
-    .select('capability_category, capability_name, delta_magnitude, vendors_affected, detected_date, confidence_score')
+    .select(
+      'capability_category, capability_name, delta_magnitude, vendors_affected, detected_date, confidence_score'
+    )
     .order('detected_date', { ascending: false })
     .limit(500)
 

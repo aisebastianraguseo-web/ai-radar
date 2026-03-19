@@ -18,10 +18,14 @@ export function LoadingSpinner({
   }
 
   return (
-    <div role="status" aria-label={label} className={cn('flex items-center justify-center', className)}>
+    <div
+      role="status"
+      aria-label={label}
+      className={cn('flex items-center justify-center', className)}
+    >
       <div
         className={cn(
-          'animate-spin rounded-full border-primary border-t-transparent',
+          'border-primary animate-spin rounded-full border-t-transparent',
           sizeClasses[size]
         )}
         aria-hidden="true"

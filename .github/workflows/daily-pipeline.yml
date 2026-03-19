@@ -1,0 +1,45 @@
+name: Daily AI Pipeline
+
+on:
+  schedule:
+    # Every day at 06:30 UTC (after nightly data can be ingested)
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    name: Ingest → Extract → Map → Score
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ingestion
+        run: |
+          HTTP=$(curl -s -o /tmp/r.json -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.APP_URL }}/api/admin/ingest/trigger")
+          echo "Ingest → HTTP $HTTP: $(cat /tmp/r.json)"
+          [ "$HTTP" = "200" ] || [ "$HTTP" = "202" ] || exit 1
+
+      - name: Trigger extraction batch
+        run: |
+          HTTP=$(curl -s -o /tmp/r.json -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/admin/extraction/trigger")
+          echo "Extract → HTTP $HTTP: $(cat /tmp/r.json)"
+          [ "$HTTP" = "200" ] || [ "$HTTP" = "202" ] || exit 1
+
+      - name: Trigger mapping batch
+        run: |
+          HTTP=$(curl -s -o /tmp/r.json -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/admin/mapping/trigger")
+          echo "Map → HTTP $HTTP: $(cat /tmp/r.json)"
+          [ "$HTTP" = "200" ] || [ "$HTTP" = "202" ] || exit 1
+
+      - name: Trigger scoring batch
+        run: |
+          HTTP=$(curl -s -o /tmp/r.json -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/admin/scoring/trigger")
+          echo "Score → HTTP $HTTP: $(cat /tmp/r.json)"
+          [ "$HTTP" = "200" ] || [ "$HTTP" = "202" ] || exit 1

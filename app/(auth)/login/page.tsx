@@ -49,10 +49,13 @@ export default function LoginPage(): React.JSX.Element {
   return (
     <main id="main-content">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Anmelden</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h1 className="text-foreground text-2xl font-bold tracking-tight">Anmelden</h1>
+        <p className="text-muted-foreground mt-2 text-sm">
           Noch kein Konto?{' '}
-          <Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link
+            href="/register"
+            className="text-primary font-medium underline-offset-4 hover:underline"
+          >
             Registrieren
           </Link>
         </p>
@@ -60,7 +63,7 @@ export default function LoginPage(): React.JSX.Element {
 
       <form onSubmit={(e) => void handleSubmit(e)} noValidate className="space-y-4">
         <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium text-foreground">
+          <label htmlFor="email" className="text-foreground block text-sm font-medium">
             E-Mail-Adresse
           </label>
           <input
@@ -70,14 +73,14 @@ export default function LoginPage(): React.JSX.Element {
             autoComplete="email"
             required
             aria-describedby={error ? 'auth-error' : undefined}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none disabled:opacity-50"
             placeholder="you@example.com"
             disabled={isLoading}
           />
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium text-foreground">
+          <label htmlFor="password" className="text-foreground block text-sm font-medium">
             Passwort
           </label>
           <input
@@ -87,7 +90,7 @@ export default function LoginPage(): React.JSX.Element {
             autoComplete="current-password"
             required
             aria-describedby={error ? 'auth-error' : undefined}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:outline-none disabled:opacity-50"
             disabled={isLoading}
           />
         </div>
@@ -97,7 +100,7 @@ export default function LoginPage(): React.JSX.Element {
             id="auth-error"
             role="alert"
             aria-live="polite"
-            className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm"
           >
             {error}
           </div>
@@ -107,13 +110,13 @@ export default function LoginPage(): React.JSX.Element {
           type="submit"
           disabled={isLoading}
           aria-busy={isLoading}
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-primary text-primary-foreground focus-visible:outline-ring w-full rounded-md px-4 py-2 text-sm font-medium hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? 'Wird angemeldet…' : 'Anmelden'}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">
+      <p className="text-muted-foreground mt-4 text-center text-xs">
         <Link href="/forgot-password" className="underline-offset-4 hover:underline">
           Passwort vergessen?
         </Link>

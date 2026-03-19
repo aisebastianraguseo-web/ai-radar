@@ -33,7 +33,9 @@ export async function GET(
 
   let query = supabase
     .from('capability_deltas')
-    .select('id, capability_name, delta_magnitude, vendors_affected, detected_date, confidence_score')
+    .select(
+      'id, capability_name, delta_magnitude, vendors_affected, detected_date, confidence_score'
+    )
     .eq('capability_category', root.capability_category)
     .order('detected_date', { ascending: true })
 

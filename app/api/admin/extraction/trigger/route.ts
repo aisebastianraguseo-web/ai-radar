@@ -31,6 +31,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json(result)
   } catch (err) {
     logger.error({ err }, 'Extraction batch failed')
-    return NextResponse.json({ error: 'Extraction failed', code: 'EXTRACTION_ERROR' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Extraction failed', code: 'EXTRACTION_ERROR' },
+      { status: 500 }
+    )
   }
 }

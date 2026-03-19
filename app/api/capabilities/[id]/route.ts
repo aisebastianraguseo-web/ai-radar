@@ -33,7 +33,9 @@ export async function GET(
   // Fetch recent deltas in same category
   const { data: deltas } = await supabase
     .from('capability_deltas')
-    .select('id, capability_name, delta_magnitude, vendors_affected, detected_date, confidence_score')
+    .select(
+      'id, capability_name, delta_magnitude, vendors_affected, detected_date, confidence_score'
+    )
     .eq('capability_category', capability.capability_category)
     .neq('id', id)
     .order('detected_date', { ascending: false })

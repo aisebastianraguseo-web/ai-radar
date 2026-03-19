@@ -50,7 +50,9 @@ async function getStats(userId: string): Promise<StatsResponse | null> {
     const [disruptionsRes, deltasCatRes, briefingRes] = await Promise.all([
       supabase
         .from('disruption_scores')
-        .select('id, total_disruption_score, alert_triggered, calculated_date, capability_deltas(capability_category, capability_name, vendors_affected, detected_date)')
+        .select(
+          'id, total_disruption_score, alert_triggered, calculated_date, capability_deltas(capability_category, capability_name, vendors_affected, detected_date)'
+        )
         .gte('calculated_date', weekAgo)
         .order('total_disruption_score', { ascending: false })
         .limit(10),
@@ -68,9 +70,18 @@ async function getStats(userId: string): Promise<StatsResponse | null> {
     ])
 
     const CATEGORIES = [
-      'context_processing', 'reasoning_depth', 'multi_step_autonomy', 'tool_use',
-      'multimodality', 'deployment_flexibility', 'cost_efficiency', 'autonomy_level',
-      'persistence', 'self_improvement', 'integration_depth', 'governance_security',
+      'context_processing',
+      'reasoning_depth',
+      'multi_step_autonomy',
+      'tool_use',
+      'multimodality',
+      'deployment_flexibility',
+      'cost_efficiency',
+      'autonomy_level',
+      'persistence',
+      'self_improvement',
+      'integration_depth',
+      'governance_security',
     ]
 
     const trendSparklines = CATEGORIES.map((cat) => {
@@ -94,7 +105,9 @@ async function getStats(userId: string): Promise<StatsResponse | null> {
 
 export default async function DashboardPage(): Promise<React.JSX.Element> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   const stats = user ? await getStats(user.id) : null
 
   const topDisruptors = stats?.top_disruptors ?? []
@@ -104,53 +117,66 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Übersicht</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          AI Capability Radar — letzte 7 Tage
-        </p>
+        <h1 className="text-foreground text-2xl font-bold tracking-tight">Übersicht</h1>
+        <p className="text-muted-foreground mt-1 text-sm">AI Capability Radar — letzte 7 Tage</p>
       </div>
 
       {/* Top Disruptors */}
       <section aria-labelledby="disruptors-heading">
-        <h2 id="disruptors-heading" className="mb-4 text-lg font-semibold text-foreground">
+        <h2 id="disruptors-heading" className="text-foreground mb-4 text-lg font-semibold">
           Top Disruptoren dieser Woche
         </h2>
         {topDisruptors.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Noch keine Daten — Ingestion noch nicht gestartet.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="border-border overflow-x-auto rounded-lg border">
             <table className="min-w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-muted-foreground">Capability</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-muted-foreground">Kategorie</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-muted-foreground">Vendors</th>
-                  <th scope="col" className="px-4 py-3 text-right font-medium text-muted-foreground">Score</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-muted-foreground">Datum</th>
+                  <th scope="col" className="text-muted-foreground px-4 py-3 text-left font-medium">
+                    Capability
+                  </th>
+                  <th scope="col" className="text-muted-foreground px-4 py-3 text-left font-medium">
+                    Kategorie
+                  </th>
+                  <th scope="col" className="text-muted-foreground px-4 py-3 text-left font-medium">
+                    Vendors
+                  </th>
+                  <th
+                    scope="col"
+                    className="text-muted-foreground px-4 py-3 text-right font-medium"
+                  >
+                    Score
+                  </th>
+                  <th scope="col" className="text-muted-foreground px-4 py-3 text-left font-medium">
+                    Datum
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-border divide-y">
                 {topDisruptors.map((d) => (
                   <tr key={d.id} className="hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium text-foreground">
+                    <td className="text-foreground px-4 py-3 font-medium">
                       <a href={`/dashboard/disruptions/${d.id}`} className="hover:underline">
                         {d.capability_deltas?.capability_name ?? '—'}
                       </a>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="text-muted-foreground px-4 py-3">
                       {d.capability_deltas?.capability_category?.replace(/_/g, ' ') ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="text-muted-foreground px-4 py-3">
                       {d.capability_deltas?.vendors_affected?.join(', ') ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className={`font-mono font-semibold ${getScoreColor(d.total_disruption_score)}`}>
+                      <span
+                        className={`font-mono font-semibold ${getScoreColor(d.total_disruption_score)}`}
+                      >
                         {d.total_disruption_score.toFixed(1)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="text-muted-foreground px-4 py-3">
                       {format(new Date(d.calculated_date), 'dd.MM.yyyy')}
                     </td>
                   </tr>
@@ -163,17 +189,17 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
 
       {/* Capability Trends */}
       <section aria-labelledby="trends-heading">
-        <h2 id="trends-heading" className="mb-4 text-lg font-semibold text-foreground">
+        <h2 id="trends-heading" className="text-foreground mb-4 text-lg font-semibold">
           Capability-Trends (30 Tage)
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {sparklines.map((s) => (
-            <div key={s.category} className="rounded-lg border border-border bg-card p-3">
-              <p className="text-xs font-medium text-muted-foreground">
+            <div key={s.category} className="border-border bg-card rounded-lg border p-3">
+              <p className="text-muted-foreground text-xs font-medium">
                 {s.category.replace(/_/g, ' ')}
               </p>
-              <p className="mt-1 text-xl font-bold text-foreground">{s.count}</p>
-              <p className="text-xs text-muted-foreground">Deltas, Magnitude {s.total_magnitude}</p>
+              <p className="text-foreground mt-1 text-xl font-bold">{s.count}</p>
+              <p className="text-muted-foreground text-xs">Deltas, Magnitude {s.total_magnitude}</p>
             </div>
           ))}
         </div>
@@ -182,18 +208,18 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
       {/* Latest Briefing */}
       {latestBriefing && (
         <section aria-labelledby="briefing-heading">
-          <h2 id="briefing-heading" className="mb-4 text-lg font-semibold text-foreground">
+          <h2 id="briefing-heading" className="text-foreground mb-4 text-lg font-semibold">
             Letztes Weekly Briefing
           </h2>
-          <div className="rounded-lg border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">
+          <div className="border-border bg-card rounded-lg border p-5">
+            <p className="text-muted-foreground text-xs">
               {format(new Date(latestBriefing.week_start), 'dd.MM.')} –{' '}
               {format(new Date(latestBriefing.week_end), 'dd.MM.yyyy')}
             </p>
-            <p className="mt-2 text-sm text-foreground">{latestBriefing.executive_summary}</p>
+            <p className="text-foreground mt-2 text-sm">{latestBriefing.executive_summary}</p>
             <a
               href={`/dashboard/briefings/${latestBriefing.id}`}
-              className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+              className="text-primary mt-3 inline-block text-sm font-medium underline-offset-4 hover:underline"
             >
               Vollständiges Briefing lesen →
             </a>

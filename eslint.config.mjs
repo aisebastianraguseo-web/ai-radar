@@ -11,11 +11,7 @@ const eslintConfig = [
   // CRITICAL: ESLint v9 flat config — ignores must be first element.
   // Never add .eslintignore — it is silently ignored in v9 flat config.
   { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'] },
-  ...compat.extends(
-    'next/core-web-vitals',
-    'next/typescript',
-    'plugin:jsx-a11y/recommended'
-  ),
+  ...compat.extends('next/core-web-vitals', 'next/typescript', 'plugin:jsx-a11y/recommended'),
   {
     rules: {
       'no-console': 'error',

@@ -6,7 +6,9 @@ interface BriefingPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function BriefingDetailPage({ params }: BriefingPageProps): Promise<React.JSX.Element> {
+export default async function BriefingDetailPage({
+  params,
+}: BriefingPageProps): Promise<React.JSX.Element> {
   const { id } = await params
   const supabase = await createClient()
 
@@ -21,23 +23,23 @@ export default async function BriefingDetailPage({ params }: BriefingPageProps):
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           {format(new Date(briefing.week_start), 'dd.MM.')} –{' '}
           {format(new Date(briefing.week_end), 'dd.MM.yyyy')}
         </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-foreground mt-1 text-2xl font-bold tracking-tight">
           Weekly AI Briefing
         </h1>
-        <p className="mt-2 text-base text-muted-foreground">{briefing.executive_summary}</p>
+        <p className="text-muted-foreground mt-2 text-base">{briefing.executive_summary}</p>
       </div>
 
       {briefing.full_content_md && (
-        <div className="prose prose-invert max-w-none rounded-lg border border-border bg-card p-6 text-sm text-foreground">
-          <pre className="whitespace-pre-wrap font-sans">{briefing.full_content_md}</pre>
+        <div className="prose prose-invert border-border bg-card text-foreground max-w-none rounded-lg border p-6 text-sm">
+          <pre className="font-sans whitespace-pre-wrap">{briefing.full_content_md}</pre>
         </div>
       )}
 
-      <div className="text-xs text-muted-foreground">
+      <div className="text-muted-foreground text-xs">
         Generiert mit {briefing.model_version} am{' '}
         {format(new Date(briefing.created_at), 'dd.MM.yyyy HH:mm')} UTC
       </div>

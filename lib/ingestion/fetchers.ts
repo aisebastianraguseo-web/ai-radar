@@ -31,10 +31,9 @@ interface HnHit {
 }
 
 async function fetchHackerNews(_source: SourceDefinition): Promise<FetchedItem[]> {
-  const resp = await fetch(
-    'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=50',
-    { signal: AbortSignal.timeout(10000) }
-  )
+  const resp = await fetch('https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=50', {
+    signal: AbortSignal.timeout(10000),
+  })
   if (!resp.ok) throw new Error(`HN API error: ${resp.status}`)
   const data = (await resp.json()) as { hits?: HnHit[] }
   return (data.hits ?? [])

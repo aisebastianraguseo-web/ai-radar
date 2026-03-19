@@ -9,16 +9,16 @@
 
 ## Summary
 
-| Check | Result |
-|-------|--------|
-| Completeness | PASS |
-| Consistency | WARN |
-| Security Review | PASS |
-| Scope Realism | WARN |
-| Open Questions | 3 unresolved, 0 blocking (OQ-1, OQ-2, OQ-3 resolved) |
-| Estimated Build Cost | ~$2–4 (pipeline tokens, Sonnet 4.6) |
-| Infrastructure Cost/Month | ~$10–40 (weekly cadence, free tiers) |
-| External Accounts Needed | 9 (GitHub Actions + CRON_SECRET added) |
+| Check                     | Result                                               |
+| ------------------------- | ---------------------------------------------------- |
+| Completeness              | PASS                                                 |
+| Consistency               | WARN                                                 |
+| Security Review           | PASS                                                 |
+| Scope Realism             | WARN                                                 |
+| Open Questions            | 3 unresolved, 0 blocking (OQ-1, OQ-2, OQ-3 resolved) |
+| Estimated Build Cost      | ~$2–4 (pipeline tokens, Sonnet 4.6)                  |
+| Infrastructure Cost/Month | ~$10–40 (weekly cadence, free tiers)                 |
+| External Accounts Needed  | 9 (GitHub Actions + CRON_SECRET added)               |
 
 **Overall Recommendation:** READY TO BUILD — all blocking questions resolved. Proceed to Phase 3 (Scaffold).
 
@@ -28,31 +28,31 @@
 
 ### 1.1 Required Sections
 
-| Section | Present | Non-Empty | Notes |
-|---------|---------|-----------|-------|
-| 1. Product Overview | ✓ | ✓ | |
-| 2. User Personas | ✓ | ✓ | 3 personas |
-| 3. Features | ✓ | ✓ | 8 features |
-| 4. Data Model | ✓ | ✓ | Full SQL DDL |
-| 5. API Surface | ✓ | ✓ | 20 endpoints |
-| 6. Non-Functional | ✓ | ✓ | |
-| 7. Out of Scope | ✓ | ✓ | 16 deferred items |
-| 8. External Dependencies | ✓ | ✓ | 8 services |
-| 9. Open Questions | ✓ | ✓ | 6 questions |
+| Section                  | Present | Non-Empty | Notes             |
+| ------------------------ | ------- | --------- | ----------------- |
+| 1. Product Overview      | ✓       | ✓         |                   |
+| 2. User Personas         | ✓       | ✓         | 3 personas        |
+| 3. Features              | ✓       | ✓         | 8 features        |
+| 4. Data Model            | ✓       | ✓         | Full SQL DDL      |
+| 5. API Surface           | ✓       | ✓         | 20 endpoints      |
+| 6. Non-Functional        | ✓       | ✓         |                   |
+| 7. Out of Scope          | ✓       | ✓         | 16 deferred items |
+| 8. External Dependencies | ✓       | ✓         | 8 services        |
+| 9. Open Questions        | ✓       | ✓         | 6 questions       |
 
 ### 1.2 Feature Completeness
 
-| Feature | User Stories | Acceptance Criteria | API Surface | Data Requirements |
-|---------|-------------|--------------------|-----------|--------------------|
-| user-auth | 4 | 7 | ✓ | ✓ |
-| data-ingestion-orchestrator | 2 | 7 | ✓ | ✓ |
-| capability-delta-extraction | 2 | 7 | ✓ | ✓ |
-| capability-landscape-database | 2 | 6 | ✓ | ✓ |
-| business-impact-mapper | 2 | 6 | ✓ | ✓ |
-| disruption-scoring-engine | 2 | 6 | ✓ | ✓ |
-| dashboard-and-visualization | 3 | 8 | ✓ | ✓ |
-| alerting-and-notification-system | 3 | 9 | ✓ | ✓ |
-| weekly-briefing-generator | 2 | 8 | ✓ | ✓ |
+| Feature                          | User Stories | Acceptance Criteria | API Surface | Data Requirements |
+| -------------------------------- | ------------ | ------------------- | ----------- | ----------------- |
+| user-auth                        | 4            | 7                   | ✓           | ✓                 |
+| data-ingestion-orchestrator      | 2            | 7                   | ✓           | ✓                 |
+| capability-delta-extraction      | 2            | 7                   | ✓           | ✓                 |
+| capability-landscape-database    | 2            | 6                   | ✓           | ✓                 |
+| business-impact-mapper           | 2            | 6                   | ✓           | ✓                 |
+| disruption-scoring-engine        | 2            | 6                   | ✓           | ✓                 |
+| dashboard-and-visualization      | 3            | 8                   | ✓           | ✓                 |
+| alerting-and-notification-system | 3            | 9                   | ✓           | ✓                 |
+| weekly-briefing-generator        | 2            | 8                   | ✓           | ✓                 |
 
 All features have ≥ 2 user stories and ≥ 3 acceptance criteria. **PASS.**
 
@@ -73,16 +73,16 @@ All features have ≥ 2 user stories and ≥ 3 acceptance criteria. **PASS.**
 
 ### 2.1 Intake vs Spec Comparison
 
-| Field | Intake Value | Spec Value | Match? |
-|-------|-------------|------------|--------|
-| Product type | web-saas | web-saas | ✓ |
-| Feature count | 8 | 8 | ✓ |
-| Out-of-scope items | 8 listed | 16 listed | ✓ (spec is more explicit) |
-| LLM model | claude-opus-4-6 | claude-opus-4-6 | ✓ |
-| Dark mode | true | true (default) | ✓ |
-| Data region | EU primary | eu-central-1 | ✓ |
-| Alert threshold | ≥ 6 | ≥ 6 | ✓ |
-| Weekly briefing cadence | Monday weekly | Monday 07:30 UTC | ✓ |
+| Field                   | Intake Value    | Spec Value       | Match?                    |
+| ----------------------- | --------------- | ---------------- | ------------------------- |
+| Product type            | web-saas        | web-saas         | ✓                         |
+| Feature count           | 8               | 8                | ✓                         |
+| Out-of-scope items      | 8 listed        | 16 listed        | ✓ (spec is more explicit) |
+| LLM model               | claude-opus-4-6 | claude-opus-4-6  | ✓                         |
+| Dark mode               | true            | true (default)   | ✓                         |
+| Data region             | EU primary      | eu-central-1     | ✓                         |
+| Alert threshold         | ≥ 6             | ≥ 6              | ✓                         |
+| Weekly briefing cadence | Monday weekly   | Monday 07:30 UTC | ✓                         |
 
 ### 2.2 Contradictions Found
 
@@ -136,16 +136,16 @@ No blocking auth issues found.
 
 ### 3.4 OWASP Checklist
 
-| Risk | Addressed in Spec? | Notes |
-|------|--------------------|-------|
-| A01 Broken Access Control | ✓ | RLS default-deny; admin role checks on all admin endpoints |
-| A02 Cryptographic Failures | ✓ | Supabase Auth handles hashing; HTTPS enforced; no plaintext passwords |
-| A03 Injection | ✓ | Supabase JS SDK parameterised queries; Zod validation |
-| A04 Insecure Design | partial | Threat model references intake notes; RLS default-deny in place |
-| A05 Security Misconfiguration | ✓ | CSP nonce-based, all headers listed in Section 6.2 |
-| A07 Auth Failures | ✓ | Rate limiting (10/15min/IP), JWT server-side verification |
-| A09 Logging Failures | ✓ | `alert_logs` audit trail; server-side error logging required |
-| A10 SSRF | partial | WARN: Ingestion pipeline fetches external URLs. RSS feeds and GitHub API responses must not be used to derive further server-side fetch URLs from user input. Validate all fetched URLs against an allowlist in the ingestion service. |
+| Risk                          | Addressed in Spec? | Notes                                                                                                                                                                                                                                  |
+| ----------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A01 Broken Access Control     | ✓                  | RLS default-deny; admin role checks on all admin endpoints                                                                                                                                                                             |
+| A02 Cryptographic Failures    | ✓                  | Supabase Auth handles hashing; HTTPS enforced; no plaintext passwords                                                                                                                                                                  |
+| A03 Injection                 | ✓                  | Supabase JS SDK parameterised queries; Zod validation                                                                                                                                                                                  |
+| A04 Insecure Design           | partial            | Threat model references intake notes; RLS default-deny in place                                                                                                                                                                        |
+| A05 Security Misconfiguration | ✓                  | CSP nonce-based, all headers listed in Section 6.2                                                                                                                                                                                     |
+| A07 Auth Failures             | ✓                  | Rate limiting (10/15min/IP), JWT server-side verification                                                                                                                                                                              |
+| A09 Logging Failures          | ✓                  | `alert_logs` audit trail; server-side error logging required                                                                                                                                                                           |
+| A10 SSRF                      | partial            | WARN: Ingestion pipeline fetches external URLs. RSS feeds and GitHub API responses must not be used to derive further server-side fetch URLs from user input. Validate all fetched URLs against an allowlist in the ingestion service. |
 
 ### 3.5 Security Risks
 
@@ -159,17 +159,17 @@ No blocking auth issues found.
 
 ### 4.1 Feature Count and Complexity
 
-| Feature | Estimated Effort | Complexity | Notes |
-|---------|-----------------|-----------|-------|
-| user-auth | S | low | Standard Supabase Auth + profile update |
-| data-ingestion-orchestrator | L | high | 7+ external API integrations, cron, dedup logic |
-| capability-delta-extraction | L | high | LLM pipeline, structured output, error handling |
-| capability-landscape-database | M | medium | CRUD + time-series queries + snapshot cron |
-| business-impact-mapper | M | medium | Second LLM call, enum mapping, idempotency |
-| disruption-scoring-engine | S | medium | Weighted formula, generated column logic |
-| dashboard-and-visualization | XL | high | 5 views, Recharts charts, heatmap, search, filters |
-| alerting-and-notification-system | L | high | Multi-channel delivery, retry logic, in-app badge |
-| weekly-briefing-generator | M | medium | LLM synthesis, email template, cron |
+| Feature                          | Estimated Effort | Complexity | Notes                                              |
+| -------------------------------- | ---------------- | ---------- | -------------------------------------------------- |
+| user-auth                        | S                | low        | Standard Supabase Auth + profile update            |
+| data-ingestion-orchestrator      | L                | high       | 7+ external API integrations, cron, dedup logic    |
+| capability-delta-extraction      | L                | high       | LLM pipeline, structured output, error handling    |
+| capability-landscape-database    | M                | medium     | CRUD + time-series queries + snapshot cron         |
+| business-impact-mapper           | M                | medium     | Second LLM call, enum mapping, idempotency         |
+| disruption-scoring-engine        | S                | medium     | Weighted formula, generated column logic           |
+| dashboard-and-visualization      | XL               | high       | 5 views, Recharts charts, heatmap, search, filters |
+| alerting-and-notification-system | L                | high       | Multi-channel delivery, retry logic, in-app badge  |
+| weekly-briefing-generator        | M                | medium     | LLM synthesis, email template, cron                |
 
 **Total estimated build effort: XL** (8 features, 3 of which are L or XL)
 
@@ -177,16 +177,16 @@ No blocking auth issues found.
 
 ### 4.2 External Dependencies Risk
 
-| Service | Risk | Mitigation |
-|---------|------|-----------|
-| Anthropic API | Cost overrun if extraction runs uncapped | Per-run extraction limit (AC-delta-6); weekly cadence keeps costs at $10–40/mo |
-| GitHub API | 403 on rate limit (5000 req/hr) | Cache responses; weekly run uses < 100 requests |
-| Product Hunt API | Auth complexity, rate limits | Mark as P2 — skip if auth blocks scaffold |
-| ArXiv API | Atom feed may be slow / unreliable | Implement timeout + skip on failure |
-| Resend | Email deliverability (DNS setup required) | Must verify sending domain before go-live |
-| ~~Vercel Cron~~ | ~~Pro plan required~~ | RESOLVED: GitHub Actions used instead; Vercel Hobby sufficient |
-| Supabase | Free tier pauses after 7 days inactivity | Weekly GitHub Actions cron keeps project active |
-| GitHub Actions | Cron reliability (best-effort, not guaranteed exact time) | Acceptable for weekly briefing; max ~5 min delay |
+| Service          | Risk                                                      | Mitigation                                                                     |
+| ---------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Anthropic API    | Cost overrun if extraction runs uncapped                  | Per-run extraction limit (AC-delta-6); weekly cadence keeps costs at $10–40/mo |
+| GitHub API       | 403 on rate limit (5000 req/hr)                           | Cache responses; weekly run uses < 100 requests                                |
+| Product Hunt API | Auth complexity, rate limits                              | Mark as P2 — skip if auth blocks scaffold                                      |
+| ArXiv API        | Atom feed may be slow / unreliable                        | Implement timeout + skip on failure                                            |
+| Resend           | Email deliverability (DNS setup required)                 | Must verify sending domain before go-live                                      |
+| ~~Vercel Cron~~  | ~~Pro plan required~~                                     | RESOLVED: GitHub Actions used instead; Vercel Hobby sufficient                 |
+| Supabase         | Free tier pauses after 7 days inactivity                  | Weekly GitHub Actions cron keeps project active                                |
+| GitHub Actions   | Cron reliability (best-effort, not guaranteed exact time) | Acceptable for weekly briefing; max ~5 min delay                               |
 
 ### 4.3 Scope Creep Risks
 
@@ -200,22 +200,24 @@ No blocking auth issues found.
 
 ### 5.1 Build Token Estimate
 
-| Phase | Agent | Est. Tokens | Basis |
-|-------|-------|-------------|-------|
-| 1. Spec | spec-agent | ~20,000 | Intake (750 lines) + governance → spec.md |
-| 2. Validation | spec-validator | ~10,000 | spec.md → validation report |
-| 3. Scaffold | scaffold-agent | ~30,000 | spec.md → ~60 boilerplate files |
-| 4. Features | feature-agent × 8 | ~160,000 | ~20k/feature (read context + write code) |
-| 5. Gate | gate-agent | ~8,000 | Read code + tool output → gate report |
-| 6. Fix | fix-agent (1 run) | ~15,000 | Gate report + failing files → fixes |
-| **Total** | | **~243,000** | |
+| Phase         | Agent             | Est. Tokens  | Basis                                     |
+| ------------- | ----------------- | ------------ | ----------------------------------------- |
+| 1. Spec       | spec-agent        | ~20,000      | Intake (750 lines) + governance → spec.md |
+| 2. Validation | spec-validator    | ~10,000      | spec.md → validation report               |
+| 3. Scaffold   | scaffold-agent    | ~30,000      | spec.md → ~60 boilerplate files           |
+| 4. Features   | feature-agent × 8 | ~160,000     | ~20k/feature (read context + write code)  |
+| 5. Gate       | gate-agent        | ~8,000       | Read code + tool output → gate report     |
+| 6. Fix        | fix-agent (1 run) | ~15,000      | Gate report + failing files → fixes       |
+| **Total**     |                   | **~243,000** |                                           |
 
 **Price calculation (Sonnet 4.6):**
+
 - Input tokens (~70%): 170k × $3/M = **$0.51**
 - Output tokens (~30%): 73k × $15/M = **$1.09**
 - **Total: ~$1.60–$4** (depending on fix iterations)
 
 **Price calculation (Opus 4.6):**
+
 - Input tokens: 170k × $15/M = $2.55
 - Output tokens: 73k × $75/M = $5.48
 - **Total: ~$8–12** (depending on fix iterations)
@@ -224,17 +226,18 @@ No blocking auth issues found.
 
 ### 5.2 Infrastructure Cost Estimate (Monthly, weekly cadence)
 
-| Service | Plan | Cost/Mo | Notes |
-|---------|------|---------|-------|
-| Supabase | Free | **$0** | 500MB DB, Edge Functions; weekly cron prevents pause |
-| Vercel | Hobby | **$0** | No Cron needed; GitHub Actions handles scheduling |
-| GitHub Actions | Free | **$0** | < 2 min/week; well within 500 min/mo free tier |
-| Resend | Free | **$0** | < 3000 emails/mo for MVP |
-| Anthropic API | Pay-per-use | **$10–40** | ~50–100 extractions/week @ $0.05–0.10/call |
-| GitHub API | Free | **$0** | Public API, weekly usage far below rate limit |
-| **Total** | | **~$10–40/mo** | Scales linearly with ingestion frequency |
+| Service        | Plan        | Cost/Mo        | Notes                                                |
+| -------------- | ----------- | -------------- | ---------------------------------------------------- |
+| Supabase       | Free        | **$0**         | 500MB DB, Edge Functions; weekly cron prevents pause |
+| Vercel         | Hobby       | **$0**         | No Cron needed; GitHub Actions handles scheduling    |
+| GitHub Actions | Free        | **$0**         | < 2 min/week; well within 500 min/mo free tier       |
+| Resend         | Free        | **$0**         | < 3000 emails/mo for MVP                             |
+| Anthropic API  | Pay-per-use | **$10–40**     | ~50–100 extractions/week @ $0.05–0.10/call           |
+| GitHub API     | Free        | **$0**         | Public API, weekly usage far below rate limit        |
+| **Total**      |             | **~$10–40/mo** | Scales linearly with ingestion frequency             |
 
 **Scale-up triggers:**
+
 - Supabase Pro ($25/mo): when DB > 400MB or Edge Functions > 400k invocations/month
 - Vercel Pro ($20/mo): only if custom domain SSL automation or team features needed
 - Anthropic costs double with each 2× increase in ingestion frequency
@@ -258,19 +261,21 @@ No blocking auth issues found.
 
 ## 7. Open Questions (from spec)
 
-| # | Question | Severity | Blocks Build? |
-|---|----------|----------|--------------|
+| #    | Question                                            | Severity | Blocks Build?                                                                    |
+| ---- | --------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
 | OQ-1 | ~~Product ID: `ai-radar` vs `ai-capability-radar`~~ | RESOLVED | ID = `ai-radar`; repo = `https://github.com/aisebastianraguseo-web/ai-radar.git` |
-| OQ-2 | ~~Vercel Cron vs. alternative scheduler~~ | RESOLVED | GitHub Actions Cron (free, weekly); Supabase Edge Function for extraction |
-| OQ-3 | ~~User registration: open vs. invite-only~~ | RESOLVED | **Open registration** — public `/register` page, email verification required |
-| OQ-4 | Heatmap addressability score formula | MED | No (assumption: mean delta_magnitude last 30 days) |
-| OQ-5 | Empty digest when no events above threshold | LOW | No (assumption: skip) |
-| OQ-6 | Momentum score formula | MED | No (assumption: mention_count ≥5→2, ≥2→1, else 0) |
+| OQ-2 | ~~Vercel Cron vs. alternative scheduler~~           | RESOLVED | GitHub Actions Cron (free, weekly); Supabase Edge Function for extraction        |
+| OQ-3 | ~~User registration: open vs. invite-only~~         | RESOLVED | **Open registration** — public `/register` page, email verification required     |
+| OQ-4 | Heatmap addressability score formula                | MED      | No (assumption: mean delta_magnitude last 30 days)                               |
+| OQ-5 | Empty digest when no events above threshold         | LOW      | No (assumption: skip)                                                            |
+| OQ-6 | Momentum score formula                              | MED      | No (assumption: mention_count ≥5→2, ≥2→1, else 0)                                |
 
 **Questions that BLOCK the build:**
+
 - None. All blocking questions resolved.
 
 **Questions that can be resolved later:**
+
 - OQ-4, OQ-5, OQ-6 — all have documented assumptions; build can proceed.
 
 ---

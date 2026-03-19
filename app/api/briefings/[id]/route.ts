@@ -16,11 +16,7 @@ export async function GET(
 
   const { id } = await params
 
-  const { data, error } = await supabase
-    .from('weekly_briefings')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { data, error } = await supabase.from('weekly_briefings').select('*').eq('id', id).single()
 
   if (error || !data) {
     if (error?.code === 'PGRST116') {

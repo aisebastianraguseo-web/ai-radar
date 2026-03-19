@@ -3,23 +3,23 @@ import type { Database } from '@/types/database'
 import logger from '@/lib/logger'
 
 export interface ScorecardInputs {
-  delta_magnitude: number           // 0-2
-  vendors_affected: string[]        // number of vendors = distribution signal
-  confidence_score: number          // 0-1
-  has_open_source: boolean          // is any vendor open-weight/open-source?
-  mapping_count: number             // number of business problem mappings
-  source_type: string               // 'arxiv' | 'blog_official' | 'github_trending' etc.
+  delta_magnitude: number // 0-2
+  vendors_affected: string[] // number of vendors = distribution signal
+  confidence_score: number // 0-1
+  has_open_source: boolean // is any vendor open-weight/open-source?
+  mapping_count: number // number of business problem mappings
+  source_type: string // 'arxiv' | 'blog_official' | 'github_trending' etc.
 }
 
 export interface ScoreBreakdown {
-  vendor_leadership_score: number   // 0-2
-  novelty_score: number             // 0-2
+  vendor_leadership_score: number // 0-2
+  novelty_score: number // 0-2
   distribution_potential_score: number // 0-2
-  open_source_score: number         // 0-1
-  cost_reduction_score: number      // 0-2
-  momentum_score: number            // 0-2
-  hype_adjustment: number           // 0-1 (subtracted)
-  multi_signal_bonus: number        // 0-1 (added)
+  open_source_score: number // 0-1
+  cost_reduction_score: number // 0-2
+  momentum_score: number // 0-2
+  hype_adjustment: number // 0-1 (subtracted)
+  multi_signal_bonus: number // 0-1 (added)
   total_disruption_score: number
 }
 
@@ -38,12 +38,18 @@ export function calculateScore(inputs: ScorecardInputs): ScoreBreakdown {
   const distribution_potential_score = Math.min(2, inputs.mapping_count)
 
   // open_source: any open-source/open-weight vendor affected
-  const hasOpenSource = inputs.vendors_affected.some((v) => OPEN_SOURCE_VENDORS.has(v.toLowerCase()))
+  const hasOpenSource = inputs.vendors_affected.some((v) =>
+    OPEN_SOURCE_VENDORS.has(v.toLowerCase())
+  )
   const open_source_score = inputs.has_open_source || hasOpenSource ? 1 : 0
 
   // cost_reduction: github/arxiv signals = real impl, 2; blog_official = 1; other = 0
   const implSources = new Set(['arxiv', 'github_trending'])
-  const cost_reduction_score = implSources.has(inputs.source_type) ? 2 : inputs.source_type === 'blog_official' ? 1 : 0
+  const cost_reduction_score = implSources.has(inputs.source_type)
+    ? 2
+    : inputs.source_type === 'blog_official'
+      ? 1
+      : 0
 
   // momentum: multiple vendors affected = higher momentum
   const momentum_score = Math.min(2, inputs.vendors_affected.length)

@@ -23,14 +23,12 @@ export default async function BriefingsPage(): Promise<React.JSX.Element> {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Weekly Briefings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Wöchentliche KI-Capability-Berichte
-        </p>
+        <h1 className="text-foreground text-2xl font-bold tracking-tight">Weekly Briefings</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Wöchentliche KI-Capability-Berichte</p>
       </div>
 
       {briefings.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Noch kein Briefing generiert. Das erste Briefing erscheint am nächsten Montag.
         </p>
       ) : (
@@ -39,15 +37,15 @@ export default async function BriefingsPage(): Promise<React.JSX.Element> {
             <li key={b.id}>
               <a
                 href={`/dashboard/briefings/${b.id}`}
-                className="block rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/40"
+                className="border-border bg-card hover:border-primary/40 block rounded-lg border p-5 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {format(new Date(b.week_start), 'dd.MM.')} –{' '}
                       {format(new Date(b.week_end), 'dd.MM.yyyy')}
                     </p>
-                    <p className="mt-1 text-sm text-foreground line-clamp-2">
+                    <p className="text-foreground mt-1 line-clamp-2 text-sm">
                       {b.executive_summary || 'Zusammenfassung nicht verfügbar.'}
                     </p>
                   </div>
@@ -56,8 +54,8 @@ export default async function BriefingsPage(): Promise<React.JSX.Element> {
                       b.status === 'ready'
                         ? 'bg-green-500/20 text-green-400'
                         : b.status === 'failed'
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-muted text-muted-foreground'
+                          ? 'bg-red-500/20 text-red-400'
+                          : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {b.status}

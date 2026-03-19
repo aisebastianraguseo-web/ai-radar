@@ -102,10 +102,7 @@ export async function extractFromSource(
   if (source.extraction_status === 'done') return 0
 
   // Mark as queued
-  await supabase
-    .from('ingested_sources')
-    .update({ extraction_status: 'queued' })
-    .eq('id', sourceId)
+  await supabase.from('ingested_sources').update({ extraction_status: 'queued' }).eq('id', sourceId)
 
   const title = source.title
   const content = source.content ?? source.title

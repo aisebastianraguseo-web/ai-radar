@@ -2,19 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
 /** Returns true when the authenticated user has admin role */
-export async function isAdmin(
-  supabase: SupabaseClient<Database>
-): Promise<boolean> {
+export async function isAdmin(supabase: SupabaseClient<Database>): Promise<boolean> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return false
 
-  const { data } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
 
   return data?.role === 'admin'
 }

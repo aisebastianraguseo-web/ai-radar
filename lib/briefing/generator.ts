@@ -29,7 +29,9 @@ async function buildContext(
   const [disruptionsRes, deltasRes, mappingsRes] = await Promise.all([
     supabase
       .from('disruption_scores')
-      .select('total_disruption_score, delta_id, capability_deltas(capability_name, capability_category, vendors_affected)')
+      .select(
+        'total_disruption_score, delta_id, capability_deltas(capability_name, capability_category, vendors_affected)'
+      )
       .gte('calculated_date', weekStart)
       .lte('calculated_date', weekEnd)
       .order('total_disruption_score', { ascending: false })
@@ -55,7 +57,11 @@ async function buildContext(
   }
 
   const topDisruptors = (disruptionsRes.data ?? []).map((d) => {
-    const delta = d.capability_deltas as { capability_name?: string; capability_category?: string; vendors_affected?: string[] } | null
+    const delta = d.capability_deltas as {
+      capability_name?: string
+      capability_category?: string
+      vendors_affected?: string[]
+    } | null
     return {
       name: delta?.capability_name ?? 'Unknown',
       score: d.total_disruption_score,
@@ -67,9 +73,18 @@ async function buildContext(
 
   // Category trends
   const CATEGORIES = [
-    'context_processing', 'reasoning_depth', 'multi_step_autonomy', 'tool_use',
-    'multimodality', 'deployment_flexibility', 'cost_efficiency', 'autonomy_level',
-    'persistence', 'self_improvement', 'integration_depth', 'governance_security',
+    'context_processing',
+    'reasoning_depth',
+    'multi_step_autonomy',
+    'tool_use',
+    'multimodality',
+    'deployment_flexibility',
+    'cost_efficiency',
+    'autonomy_level',
+    'persistence',
+    'self_improvement',
+    'integration_depth',
+    'governance_security',
   ]
   const categoryTrends = CATEGORIES.map((cat) => {
     const deltas = (deltasRes.data ?? []).filter((d) => d.capability_category === cat)
@@ -215,7 +230,8 @@ export async function generateWeeklyBriefing(
     await supabase
       .from('weekly_briefings')
       .update({
-        executive_summary: typeof parsed.executive_summary === 'string' ? parsed.executive_summary : '',
+        executive_summary:
+          typeof parsed.executive_summary === 'string' ? parsed.executive_summary : '',
         top_disruptors: Array.isArray(parsed.top_disruptors) ? parsed.top_disruptors : [],
         capability_trends: Array.isArray(parsed.capability_trends) ? parsed.capability_trends : [],
         problem_matrix: Array.isArray(parsed.problem_matrix) ? parsed.problem_matrix : [],
@@ -226,15 +242,18 @@ export async function generateWeeklyBriefing(
       .eq('id', briefingId)
 
     // Send email to subscribed users
-    await sendBriefingEmails(supabase, briefingId, weekStart, weekEnd, typeof parsed.executive_summary === 'string' ? parsed.executive_summary : '')
+    await sendBriefingEmails(
+      supabase,
+      briefingId,
+      weekStart,
+      weekEnd,
+      typeof parsed.executive_summary === 'string' ? parsed.executive_summary : ''
+    )
 
     return briefingId
   } catch (err) {
     logger.error({ err, briefingId }, 'Briefing generation failed')
-    await supabase
-      .from('weekly_briefings')
-      .update({ status: 'failed' })
-      .eq('id', briefingId)
+    await supabase.from('weekly_briefings').update({ status: 'failed' }).eq('id', briefingId)
     throw err
   }
 }

@@ -9,26 +9,27 @@ Agents use this file to select libraries, tools, and configurations. Do not devi
 
 ### Core Stack
 
-| Layer | Choice | Version |
-|-------|--------|---------|
-| Framework | Next.js (App Router) | 15.x |
-| Language | TypeScript | 5.x (`strict: true`) |
-| Styling | Tailwind CSS | 4.x |
-| Component Library | shadcn/ui | latest |
-| Backend / Auth / DB | Supabase | latest |
-| Deployment | Vercel | — |
-| ORM / Query | Supabase JS SDK + raw SQL via supabase-js | — |
-| Validation | Zod | 3.x |
-| Testing (unit) | Vitest + React Testing Library | latest |
-| Testing (E2E) | Playwright | latest |
-| A11y testing | axe-core via `@axe-core/playwright` | latest |
-| Error monitoring | Sentry | latest |
-| Logger | Pino | latest |
-| Linter | ESLint (flat config) | 9.x |
-| Formatter | Prettier | 3.x |
-| Package manager | pnpm | latest |
+| Layer               | Choice                                    | Version              |
+| ------------------- | ----------------------------------------- | -------------------- |
+| Framework           | Next.js (App Router)                      | 15.x                 |
+| Language            | TypeScript                                | 5.x (`strict: true`) |
+| Styling             | Tailwind CSS                              | 4.x                  |
+| Component Library   | shadcn/ui                                 | latest               |
+| Backend / Auth / DB | Supabase                                  | latest               |
+| Deployment          | Vercel                                    | —                    |
+| ORM / Query         | Supabase JS SDK + raw SQL via supabase-js | —                    |
+| Validation          | Zod                                       | 3.x                  |
+| Testing (unit)      | Vitest + React Testing Library            | latest               |
+| Testing (E2E)       | Playwright                                | latest               |
+| A11y testing        | axe-core via `@axe-core/playwright`       | latest               |
+| Error monitoring    | Sentry                                    | latest               |
+| Logger              | Pino                                      | latest               |
+| Linter              | ESLint (flat config)                      | 9.x                  |
+| Formatter           | Prettier                                  | 3.x                  |
+| Package manager     | pnpm                                      | latest               |
 
 ### Rationale
+
 - **Next.js 15 App Router**: Server Components enable zero-JS rendering by default; React Server Actions reduce API boilerplate; first-class Vercel integration.
 - **TypeScript strict**: Strict mode catches null/undefined bugs that are the #1 cause of runtime errors in JS. Non-negotiable — all agents must use `strict: true`.
 - **Tailwind CSS 4.x**: Design-token-based CSS, JIT compilation, excellent shadcn/ui compatibility. Utility-first scales better than CSS Modules for AI-generated code.
@@ -40,6 +41,7 @@ Agents use this file to select libraries, tools, and configurations. Do not devi
 - **pnpm**: Faster than npm/yarn, strict symlink isolation prevents phantom dependency bugs.
 
 ### Project Structure
+
 ```
 my-product/
 ├── app/                   # Next.js App Router pages and layouts
@@ -74,25 +76,26 @@ my-product/
 
 ### Core Stack
 
-| Layer | Choice | Version |
-|-------|--------|---------|
-| Language | Kotlin | 2.x |
-| UI Framework | Jetpack Compose | latest stable |
-| Design System | Material 3 | latest |
-| Architecture | MVVM + Clean Architecture (UseCase layer) | — |
-| Local DB | Room | 2.x |
-| Networking | Retrofit + OkHttp | latest |
-| Serialisation | kotlinx.serialization | latest |
-| DI | Hilt | latest |
-| Image Loading | Coil 3 | latest |
-| Async | Kotlin Coroutines + Flow | latest |
-| Testing (unit) | JUnit 5 + MockK + Turbine | latest |
-| Testing (UI) | Compose Testing + Espresso | latest |
-| CI/CD | Fastlane | latest |
-| Linter/Static | detekt + ktlint | latest |
-| Crash reporting | Firebase Crashlytics | latest |
+| Layer           | Choice                                    | Version       |
+| --------------- | ----------------------------------------- | ------------- |
+| Language        | Kotlin                                    | 2.x           |
+| UI Framework    | Jetpack Compose                           | latest stable |
+| Design System   | Material 3                                | latest        |
+| Architecture    | MVVM + Clean Architecture (UseCase layer) | —             |
+| Local DB        | Room                                      | 2.x           |
+| Networking      | Retrofit + OkHttp                         | latest        |
+| Serialisation   | kotlinx.serialization                     | latest        |
+| DI              | Hilt                                      | latest        |
+| Image Loading   | Coil 3                                    | latest        |
+| Async           | Kotlin Coroutines + Flow                  | latest        |
+| Testing (unit)  | JUnit 5 + MockK + Turbine                 | latest        |
+| Testing (UI)    | Compose Testing + Espresso                | latest        |
+| CI/CD           | Fastlane                                  | latest        |
+| Linter/Static   | detekt + ktlint                           | latest        |
+| Crash reporting | Firebase Crashlytics                      | latest        |
 
 ### Rationale
+
 - **Kotlin**: Null-safe by design, coroutines are first-class, officially supported by Google. No Java for new code.
 - **Jetpack Compose**: Declarative UI eliminates XML layouts. State-driven rendering is predictable and testable. Material 3 provides accessible defaults.
 - **MVVM + Clean Architecture**: ViewModel survives configuration changes, UseCase layer keeps business logic framework-free and testable. Repository pattern abstracts data sources.
@@ -103,6 +106,7 @@ my-product/
 - **detekt + ktlint**: Static analysis + formatting. Enforced in CI; block merges on violations.
 
 ### Project Structure
+
 ```
 app/
 ├── src/main/
@@ -135,21 +139,24 @@ app/
 
 ### Core Stack
 
-| Layer | Choice |
-|-------|--------|
-| Runtime | n8n (self-hosted or n8n.cloud) |
-| Schema | n8n Workflow JSON v1 |
-| Custom Nodes | n8n Community Nodes (npm) |
-| Credentials | n8n Credentials store (never in workflow JSON) |
-| Version Control | n8n Git integration or exported JSON in repo |
+| Layer           | Choice                                         |
+| --------------- | ---------------------------------------------- |
+| Runtime         | n8n (self-hosted or n8n.cloud)                 |
+| Schema          | n8n Workflow JSON v1                           |
+| Custom Nodes    | n8n Community Nodes (npm)                      |
+| Credentials     | n8n Credentials store (never in workflow JSON) |
+| Version Control | n8n Git integration or exported JSON in repo   |
 
 ### Rationale
+
 - **n8n**: Code-optional automation platform. Visual workflow editor accelerates iteration. JSON workflow export enables version control and AI-driven generation.
 - **Community Nodes**: Extend n8n without forking the core. Published to npm, installable in self-hosted n8n.
 - **Credentials in n8n store**: Credentials are attached to workflow nodes by reference (credential ID), never embedded in the JSON blob. This means exported workflow JSON is safe to commit.
 
 ### Workflow JSON Structure
+
 Every workflow JSON must include:
+
 ```json
 {
   "name": "Workflow name",
@@ -169,24 +176,26 @@ Every workflow JSON must include:
 
 ### Core Stack
 
-| Layer | Choice |
-|-------|--------|
-| Language | C (bare-metal) or C++ (SDK APIs) |
-| Build System | CMake 3.x |
-| Platform SDKs | ESP-IDF (ESP32), Pico SDK (RP2040), STM32 HAL, Arduino (prototyping only) |
-| Static Analysis | cppcheck + clang-tidy |
-| Formatting | clang-format |
-| Testing | Unity test framework (unit, on host) |
-| Debugging | OpenOCD + GDB |
-| OTA (if applicable) | Platform-native OTA (ESP-IDF OTA, Nordic DFU) |
+| Layer               | Choice                                                                    |
+| ------------------- | ------------------------------------------------------------------------- |
+| Language            | C (bare-metal) or C++ (SDK APIs)                                          |
+| Build System        | CMake 3.x                                                                 |
+| Platform SDKs       | ESP-IDF (ESP32), Pico SDK (RP2040), STM32 HAL, Arduino (prototyping only) |
+| Static Analysis     | cppcheck + clang-tidy                                                     |
+| Formatting          | clang-format                                                              |
+| Testing             | Unity test framework (unit, on host)                                      |
+| Debugging           | OpenOCD + GDB                                                             |
+| OTA (if applicable) | Platform-native OTA (ESP-IDF OTA, Nordic DFU)                             |
 
 ### Rationale
+
 - **C/C++**: No other language has the ecosystem depth and vendor SDK support for microcontrollers. C++ is used where RAII and class abstractions improve safety; pure C where code size is critical.
 - **CMake**: Platform-agnostic build system. Supported by all major MCU toolchains (ESP-IDF wraps it, Pico SDK requires it, STM32CubeIDE exports it).
 - **cppcheck + clang-tidy**: Static analysis catches buffer overflows, null pointer dereferences, and undefined behaviour before hardware testing.
 - **Unity**: Lightweight C test framework that runs on the host machine. Tests hardware-independent logic (parsers, state machines, algorithms) without needing a device.
 
 ### File Structure
+
 ```
 firmware/
 ├── CMakeLists.txt
@@ -208,40 +217,43 @@ firmware/
 
 ### Core Stack — Default (Go)
 
-| Layer | Choice | Version |
-|-------|--------|---------|
-| Language | Go | 1.23+ |
-| CLI Framework | Cobra | 1.x |
-| Configuration | Viper | 1.x |
-| Output formatting | `github.com/charmbracelet/lipgloss` (TUI) | latest |
-| Distribution | GitHub Releases + GoReleaser | latest |
-| Testing | `testing` stdlib + `testify` | latest |
-| Linter | golangci-lint | latest |
+| Layer             | Choice                                    | Version |
+| ----------------- | ----------------------------------------- | ------- |
+| Language          | Go                                        | 1.23+   |
+| CLI Framework     | Cobra                                     | 1.x     |
+| Configuration     | Viper                                     | 1.x     |
+| Output formatting | `github.com/charmbracelet/lipgloss` (TUI) | latest  |
+| Distribution      | GitHub Releases + GoReleaser              | latest  |
+| Testing           | `testing` stdlib + `testify`              | latest  |
+| Linter            | golangci-lint                             | latest  |
 
 ### Core Stack — Performance-critical (Rust)
 
-| Layer | Choice | Version |
-|-------|--------|---------|
-| Language | Rust | stable |
-| CLI Framework | clap (derive API) | 4.x |
-| Error handling | `anyhow` (apps) / `thiserror` (libraries) | latest |
-| Serialisation | serde + serde_json / serde_yaml | latest |
-| Async (if needed) | tokio | latest |
-| Distribution | GitHub Releases + `cargo-dist` | latest |
-| Testing | Rust `#[test]` + `assert_cmd` for CLI | latest |
-| Linter | clippy (deny warnings) | — |
+| Layer             | Choice                                    | Version |
+| ----------------- | ----------------------------------------- | ------- |
+| Language          | Rust                                      | stable  |
+| CLI Framework     | clap (derive API)                         | 4.x     |
+| Error handling    | `anyhow` (apps) / `thiserror` (libraries) | latest  |
+| Serialisation     | serde + serde_json / serde_yaml           | latest  |
+| Async (if needed) | tokio                                     | latest  |
+| Distribution      | GitHub Releases + `cargo-dist`            | latest  |
+| Testing           | Rust `#[test]` + `assert_cmd` for CLI     | latest  |
+| Linter            | clippy (deny warnings)                    | —       |
 
 ### Decision Rule: Go vs Rust
+
 - **Use Go** (default): File processing, API clients, DevOps tools, database utilities, anything that calls external services. Go's compilation speed, standard library, and goroutines are excellent for these use cases.
 - **Use Rust**: Cryptography, binary parsing, performance-sensitive data transformation, tools that process >100MB of data. Rust's zero-cost abstractions and memory safety without GC win here.
 - When in doubt, choose **Go**. It's faster to iterate with and produces smaller binaries on most platforms.
 
 ### Rationale
+
 - **Cobra**: Standard Go CLI library. Subcommand structure, auto-generated help, shell completion out of the box.
 - **GoReleaser / cargo-dist**: Single command produces cross-platform binaries (Linux amd64/arm64, macOS, Windows) and creates GitHub Releases with checksums. No manual build matrix.
 - **GitHub Releases**: Distribution platform that requires no infrastructure. Users download pre-built binaries or install via `brew`, `apt`, `scoop`.
 
 ### Distribution Checklist
+
 - Binary names follow `tool-name` (Go) or `tool-name` (Rust) conventions.
 - Include `--version` flag that prints semantic version.
 - GitHub Release assets include SHA256 checksums file.

@@ -8,22 +8,16 @@ const MAPPER_VERSION = 'v1.0'
 const PROBLEM_CLASS_DESCRIPTIONS: Record<ProblemClass, string> = {
   fragmentation:
     'Scattered data/tools/knowledge across systems, preventing holistic view or action',
-  knowledge_loss:
-    'Tacit knowledge leaving with people or locked in unstructured formats',
-  manual_handoffs:
-    'Human-mediated handoffs between process steps creating latency and errors',
+  knowledge_loss: 'Tacit knowledge leaving with people or locked in unstructured formats',
+  manual_handoffs: 'Human-mediated handoffs between process steps creating latency and errors',
   repetitivity:
     'High-volume repetitive tasks that consume human capacity without adding strategic value',
   decision_uncertainty:
     'Decisions made with incomplete information due to analysis gaps or data quality',
-  long_cycles:
-    'Extended end-to-end process durations due to sequential bottlenecks or waiting',
-  documentation_burden:
-    'Manual effort required to create, update, or maintain documentation',
-  transparency_gap:
-    'Inability to trace decisions, actions, or status through a process',
-  talent_constraints:
-    'Bottlenecks caused by shortage of specialised skills or expert bandwidth',
+  long_cycles: 'Extended end-to-end process durations due to sequential bottlenecks or waiting',
+  documentation_burden: 'Manual effort required to create, update, or maintain documentation',
+  transparency_gap: 'Inability to trace decisions, actions, or status through a process',
+  talent_constraints: 'Bottlenecks caused by shortage of specialised skills or expert bandwidth',
 }
 
 function buildMappingPrompt(
@@ -76,9 +70,15 @@ interface RawMapping {
 }
 
 const VALID_PROBLEM_CLASSES: ProblemClass[] = [
-  'fragmentation', 'knowledge_loss', 'manual_handoffs', 'repetitivity',
-  'decision_uncertainty', 'long_cycles', 'documentation_burden',
-  'transparency_gap', 'talent_constraints',
+  'fragmentation',
+  'knowledge_loss',
+  'manual_handoffs',
+  'repetitivity',
+  'decision_uncertainty',
+  'long_cycles',
+  'documentation_burden',
+  'transparency_gap',
+  'talent_constraints',
 ]
 
 const VALID_READINESS: ReadinessLevel[] = ['experimental', 'early_adopter', 'production_ready']
@@ -149,19 +149,13 @@ export async function mapDelta(
   }
 
   if (!text) {
-    await supabase
-      .from('capability_deltas')
-      .update({ mapping_status: 'failed' })
-      .eq('id', deltaId)
+    await supabase.from('capability_deltas').update({ mapping_status: 'failed' }).eq('id', deltaId)
     return 0
   }
 
   const jsonMatch = /\[[\s\S]*\]/.exec(text)
   if (!jsonMatch) {
-    await supabase
-      .from('capability_deltas')
-      .update({ mapping_status: 'done' })
-      .eq('id', deltaId)
+    await supabase.from('capability_deltas').update({ mapping_status: 'done' }).eq('id', deltaId)
     return 0
   }
 
@@ -169,10 +163,7 @@ export async function mapDelta(
   try {
     parsed = JSON.parse(jsonMatch[0]) as unknown[]
   } catch {
-    await supabase
-      .from('capability_deltas')
-      .update({ mapping_status: 'done' })
-      .eq('id', deltaId)
+    await supabase.from('capability_deltas').update({ mapping_status: 'done' }).eq('id', deltaId)
     return 0
   }
 
@@ -196,10 +187,7 @@ export async function mapDelta(
     if (!error) inserted++
   }
 
-  await supabase
-    .from('capability_deltas')
-    .update({ mapping_status: 'done' })
-    .eq('id', deltaId)
+  await supabase.from('capability_deltas').update({ mapping_status: 'done' }).eq('id', deltaId)
 
   return inserted
 }

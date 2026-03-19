@@ -31,6 +31,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     return NextResponse.json({ briefing_id: briefingId })
   } catch (err) {
     logger.error({ err }, 'Briefing generation failed')
-    return NextResponse.json({ error: 'Generation failed', code: 'GENERATION_ERROR' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Generation failed', code: 'GENERATION_ERROR' },
+      { status: 500 }
+    )
   }
 }

@@ -25,7 +25,10 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Validation failed', code: 'VALIDATION_ERROR' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Validation failed', code: 'VALIDATION_ERROR' },
+      { status: 400 }
+    )
   }
 
   const { error } = await supabase
