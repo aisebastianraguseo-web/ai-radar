@@ -1,15 +1,16 @@
 id: ai-radar
 type: web-saas
-phase: 5
-status: gate_passed
+phase: 7
+status: shipped
+version: v1.0.0
 created_at: 2026-03-18T00:00:00Z
-updated_at: 2026-03-19T12:00:00Z
+updated_at: 2026-03-19T13:00:00Z
 phases:
   1_spec: done
   2_spec_review: done
   3_scaffold: done
   4_features: done
   5_gate: done
-  6_fix: pending
-  7_ship: pending
+  6_fix: skipped
+  7_ship: done
 production_repo: https://github.com/aisebastianraguseo-web/ai-radar.git
