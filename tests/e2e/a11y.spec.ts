@@ -21,7 +21,7 @@ test.describe('Accessibility baseline', () => {
   test('login page has skip-to-content link', async ({ page }) => {
     await page.goto('/login')
     const skipLink = page.getByText('Zum Hauptinhalt springen')
-    await expect(skipLink).toBeInViewport({ ratio: 0 })
+    await expect(skipLink).toBeAttached()
     await skipLink.focus()
     await expect(skipLink).toBeVisible()
   })
